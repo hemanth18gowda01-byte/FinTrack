@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack — Financial OS 2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg2: #111111;
+      --bg3: #161616;
+      --card: #141414;
+      --card2: #1a1a1a;
+      --border: #242424;
+      --border2: #2e2e2e;
+      --cyan: #00e5a0;
+      --cyan2: #00c48c;
+      --amber: #e8b84b;
+      --amber2: #c8973a;
+      --red: #ff4d6d;
+      --red2: #cc3d57;
+      --blue: #4da6ff;
+      --purple: #9d7bff;
+      --text: #e8e8e8;
+      --text2: #a0a0a0;
+      --text3: #606060;
+      --mono: 'JetBrains Mono', monospace;
+      --serif: 'Playfair Display', serif;
+      --sans: 'Space Grotesk', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* SIDEBAR */
+    #sidebar {
+      width: 220px;
+      min-height: 100vh;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .logo-area {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: var(--sans);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--cyan); }
+
+    .logo-sub {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .nav-section {
+      padding: 16px 12px;
+      flex: 1;
+    }
+
+    .nav-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 0 8px;
+      margin-bottom: 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text2);
+      letter-spacing: 0.5px;
+      transition: all 0.15s;
+      margin-bottom: 2px;
+      user-select: none;
+      text-transform: uppercase;
+    }
+
+    .nav-item:hover { background: var(--bg3); color: var(--text); }
+    .nav-item.active { background: rgba(0,229,160,0.08); color: var(--cyan); }
+    .nav-item.active .nav-dot { background: var(--cyan); }
+
+    .nav-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text3);
+      flex-shrink: 0;
+    }
+
+    .nav-icon { font-size: 13px; width: 16px; text-align: center; }
+
+    .badge {
+      font-size: 8px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-left: auto;
+    }
+    .badge-ai { background: rgba(157,123,255,0.2); color: var(--purple); }
+    .badge-new { background: rgba(0,229,160,0.15); color: var(--cyan); }
+
+    .sidebar-user {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+    .user-name { font-size: 12px; font-weight: 600; }
+    .user-email { font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .sign-out {
+      margin-top: 12px;
+      font-size: 10px;
+      color: var(--red);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* MAIN CONTENT */
+    #main {
+      margin-left: 220px;
+      flex: 1;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    /* PAGE */
+    .page { display: none; padding: 32px 40px; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* PAGE HEADER */
+    .page-label {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+    .page-title {
+      font-family: var(--serif);
+      font-size: 36px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .page-title em { color: var(--amber); font-style: italic; }
+    .page-subtitle {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 28px;
+    }
+
+    /* STAT CARDS */
+    .stat-row {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-row-4 { grid-template-columns: repeat(4, 1fr); }
+    .stat-row-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .stat-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      font-family: var(--mono);
+      line-height: 1;
+    }
+    .stat-sub { font-size: 10px; color: var(--text3); margin-top: 4px; }
+    .val-cyan { color: var(--cyan); }
+    .val-amber { color: var(--amber); }
+    .val-red { color: var(--red); }
+    .val-white { color: var(--text); }
+
+    /* SECTION HEADER */
+    .section-header {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* CARDS GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .invest-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .invest-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+    .invest-card.selected { border-color: var(--cyan); background: rgba(0,229,160,0.04); }
+
+    .invest-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .invest-card-icon { font-size: 20px; }
+    .risk-badge {
+      font-size: 9px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .risk-zero { background: rgba(0,229,160,0.15); color: var(--cyan); }
+    .risk-low { background: rgba(0,229,160,0.1); color: #6ee7b7; }
+    .risk-low-med { background: rgba(232,184,75,0.15); color: var(--amber); }
+    .risk-medium { background: rgba(255,160,50,0.15); color: #ffa032; }
+    .risk-med-high { background: rgba(255,100,50,0.15); color: #ff6432; }
+    .risk-high { background: rgba(255,77,109,0.15); color: var(--red); }
+
+    .invest-card-name {
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--sans);
+      margin-bottom: 2px;
+    }
+    .invest-card-type {
+      font-size: 10px;
+      color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .invest-card-desc {
+      font-size: 11px;
+      color: var(--text2);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .invest-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 14px;
+    }
+    .invest-tag {
+      font-size: 9px;
+      padding: 3px 7px;
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      color: var(--text3);
+    }
+    .invest-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .invest-growth-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .invest-growth-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+    .invest-gain-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--amber);
+      text-align: right;
+    }
+    .invest-rate {
+      font-size: 10px;
+      color: var(--text3);
+      position: absolute;
+      top: 20px;
+      right: 70px;
+    }
+
+    /* SLIDER */
+    .slider-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .slider-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); }
+    .slider-value { font-size: 28px; font-weight: 700; color: var(--amber); }
+    input[type=range] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 3px;
+      background: var(--border2);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--amber);
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(232,184,75,0.4);
+    }
+    .slider-limits {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--text3);
+      margin-top: 6px;
+    }
+
+    /* INVESTMENT ALLOCATION CARDS */
+    .alloc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+    .alloc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .alloc-card-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .alloc-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .alloc-amount { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .alloc-sub { font-size: 10px; color: var(--text3); margin-bottom: 12px; }
+    .alloc-bar { height: 3px; border-radius: 2px; background: var(--border2); }
+    .alloc-bar-fill { height: 100%; border-radius: 2px; }
+
+    /* CHART SECTION */
+    .chart-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .chart-title-label {
+      font-size: 9px;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .chart-title { font-size: 14px; font-weight: 600; font-family: var(--sans); }
+    .chart-time-btns { display: flex; gap: 4px; }
+    .time-btn {
+      padding: 5px 10px;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .time-btn:hover { border-color: var(--border2); color: var(--text); }
+    .time-btn.active { background: var(--amber); border-color: var(--amber); color: var(--bg); }
+    .chart-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+    .chart-stat { background: var(--bg3); border-radius: 6px; padding: 12px 14px; }
+    .chart-stat-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .chart-stat-val { font-size: 20px; font-weight: 700; }
+    canvas { max-height: 280px; }
+    .chart-legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text2); }
+    .legend-line { width: 20px; height: 2px; border-radius: 1px; }
+
+    /* COMPARISON TABLE */
+    .table-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .table-title {
+      padding: 16px 20px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      border-bottom: 1px solid var(--border);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 10px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3);
+    }
+    td {
+      padding: 14px 20px;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .td-name { font-weight: 600; font-family: var(--sans); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .td-gain { color: var(--amber); font-weight: 600; }
+    .td-get { color: var(--cyan); font-weight: 600; }
+
+    /* STOCKS PAGE */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 7px 14px;
+      font-size: 10px;
+      font-family: var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tab-btn:hover { border-color: var(--border2); color: var(--text); }
+    .tab-btn.active { background: var(--amber); border-color: var(--amber); color: var(--bg); font-weight: 600; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .risk-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .risk-label { font-size: 9px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-right: 8px; }
+    .risk-btn {
+      padding: 6px 14px;
+      font-size: 10px;
+      font-family: var(--mono);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .risk-btn.active { background: rgba(0,229,160,0.1); border-color: var(--cyan); color: var(--cyan); }
+
+    .stock-info-line {
+      font-size: 11px;
+      color: var(--cyan);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .gaining-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .gain-badge {
+      padding: 5px 12px;
+      font-size: 10px;
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-weight: 600;
+    }
+    .gain-up { background: rgba(0,229,160,0.12); color: var(--cyan); border: 1px solid rgba(0,229,160,0.2); }
+    .gain-down { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.2); }
+    .refresh-btn {
+      margin-left: auto;
+      padding: 6px 12px;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 5px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .refresh-btn:hover { border-color: var(--border2); color: var(--text); }
+
+    .stock-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: all 0.15s;
+    }
+    .stock-card:hover { border-color: var(--border2); }
+    .stock-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .stock-ticker {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--text3);
+      text-transform: uppercase;
+    }
+    .sector-badge {
+      font-size: 8px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .sector-tech { background: rgba(77,166,255,0.15); color: var(--blue); }
+    .sector-energy { background: rgba(232,184,75,0.15); color: var(--amber); }
+    .sector-finance { background: rgba(0,229,160,0.12); color: var(--cyan); }
+    .sector-fintech { background: rgba(157,123,255,0.15); color: var(--purple); }
+    .sector-logistics { background: rgba(255,160,80,0.15); color: #ffa050; }
+    .sector-semicon { background: rgba(255,100,50,0.15); color: #ff6432; }
+
+    .stock-name { font-size: 15px; font-weight: 600; font-family: var(--sans); margin-bottom: 4px; }
+    .stock-price { font-size: 24px; font-weight: 700; font-family: var(--mono); }
+    .stock-change { font-size: 11px; margin-left: 8px; font-weight: 500; }
+    .stock-chart-mini {
+      width: 80px;
+      height: 36px;
+      margin-left: auto;
+    }
+    .day-range {
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+    .range-label { font-size: 9px; color: var(--text3); display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .range-bar { height: 3px; background: var(--border2); border-radius: 2px; position: relative; }
+    .range-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--cyan);
+      position: absolute;
+      top: -3.5px;
+      transform: translateX(-50%);
+    }
+    .range-dot.red-dot { background: var(--red); }
+    .stock-btns { display: flex; gap: 8px; }
+    .btn-watchlist {
+      flex: 1;
+      padding: 8px;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: transparent;
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      border-radius: 5px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .btn-watchlist:hover { background: rgba(232,184,75,0.1); }
+    .btn-details {
+      flex: 1;
+      padding: 8px;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text2);
+      border-radius: 5px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .btn-details:hover { border-color: var(--border2); color: var(--text); }
+
+    /* AI PICKS */
+    .ai-pick-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.15s;
+    }
+    .ai-pick-card:hover { border-color: var(--border2); }
+    .ai-pick-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .buy-badge {
+      padding: 4px 12px;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 4px;
+      letter-spacing: 1px;
+    }
+    .buy-green { background: rgba(0,229,160,0.15); color: var(--cyan); border: 1px solid rgba(0,229,160,0.25); }
+    .hold-amber { background: rgba(232,184,75,0.15); color: var(--amber); border: 1px solid rgba(232,184,75,0.25); }
+    .ai-company { font-size: 20px; font-weight: 700; font-family: var(--sans); margin-bottom: 2px; }
+    .ai-price { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .ai-confidence-label { font-size: 9px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; margin-top: 12px; }
+    .confidence-bar { height: 3px; background: var(--border2); border-radius: 2px; margin-bottom: 4px; }
+    .confidence-fill { height: 100%; border-radius: 2px; background: var(--cyan); }
+    .confidence-pct { font-size: 10px; color: var(--cyan); text-align: right; }
+    .ai-analysis-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin: 14px 0;
+      font-size: 11px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+    .ai-analysis-title { font-size: 9px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .ai-targets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .ai-target { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+    .ai-target-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .ai-target-val { font-size: 16px; font-weight: 700; }
+
+    /* MOVERS */
+    .movers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .heatmap-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+    .heat-cell {
+      border-radius: 8px;
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .heat-cell:hover { opacity: 0.85; transform: scale(0.98); }
+    .heat-green { background: rgba(0,150,80,0.6); border: 1px solid rgba(0,200,100,0.3); }
+    .heat-red { background: rgba(180,30,50,0.6); border: 1px solid rgba(255,77,109,0.3); }
+    .heat-change { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .heat-name { font-size: 11px; font-family: var(--sans); font-weight: 600; }
+    .heat-count { font-size: 9px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+    .movers-list {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .movers-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .movers-title { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600; }
+    .mover-toggle { display: flex; gap: 6px; }
+    .mover-btn {
+      padding: 4px 12px;
+      font-size: 9px;
+      font-family: var(--mono);
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text3);
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .mover-btn.active-gain { background: rgba(0,229,160,0.15); border-color: var(--cyan); color: var(--cyan); }
+    .mover-btn.active-loss { background: rgba(255,77,109,0.15); border-color: var(--red); color: var(--red); }
+
+    .mover-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .mover-row:last-child { border-bottom: none; }
+    .mover-row:hover { background: rgba(255,255,255,0.02); }
+    .mover-rank { font-size: 10px; color: var(--text3); width: 24px; }
+    .mover-info { flex: 1 }
+    .mover-ticker { font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+    .mover-name { font-size: 13px; font-weight: 600; font-family: var(--sans); }
+    .mover-right { text-align: right; }
+    .mover-price { font-size: 14px; font-weight: 700; }
+    .mover-chg { font-size: 11px; font-weight: 600; }
+
+    /* SEARCH */
+    .search-box-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .search-label { font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+    .search-input-row { display: flex; gap: 10px; }
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--amber); }
+    .search-btn {
+      padding: 12px 20px;
+      background: transparent;
+      border: 1px solid var(--amber);
+      color: var(--amber);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .search-btn:hover { background: rgba(232,184,75,0.1); }
+    .search-hint { font-size: 10px; color: var(--text3); margin-top: 8px; }
+    .quick-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .quick-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .quick-pill {
+      padding: 6px 12px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-pill:hover { border-color: var(--amber); color: var(--amber); }
+
+    /* INSURANCE */
+    .insurance-overview {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .coverage-score-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-circle {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 3px solid var(--cyan);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      box-shadow: 0 0 20px rgba(0,229,160,0.2);
+    }
+    .score-num { font-size: 32px; font-weight: 700; color: var(--cyan); }
+    .score-denom { font-size: 11px; color: var(--text3); }
+    .score-label { font-size: 13px; font-weight: 600; font-family: var(--sans); margin-bottom: 4px; }
+    .score-sub { font-size: 10px; color: var(--text3); }
+    .savings-breakdown {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+    }
+    .savings-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; }
+    .savings-row { margin-bottom: 16px; }
+    .savings-row-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .savings-row-name { font-size: 12px; font-family: var(--sans); font-weight: 600; }
+    .savings-row-sub { font-size: 9px; color: var(--text3); }
+    .savings-row-amount { font-size: 14px; font-weight: 700; }
+    .savings-row-pct { font-size: 10px; color: var(--text3); text-align: right; }
+    .sbar { height: 3px; background: var(--border2); border-radius: 2px; }
+    .sbar-fill { height: 100%; border-radius: 2px; }
+    .smart-insight-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 11px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin-top: 14px;
+    }
+    .smart-insight-title { font-size: 9px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+
+    .insurance-category {
+      margin-bottom: 28px;
+    }
+    .insurance-category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .cat-icon { font-size: 14px; }
+    .cat-name { font-weight: 600; }
+    .cat-badge {
+      font-size: 8px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .cat-recommended { background: rgba(0,229,160,0.12); color: var(--cyan); }
+    .cat-essential { background: rgba(232,184,75,0.12); color: var(--amber); }
+    .cat-mandatory { background: rgba(255,77,109,0.12); color: var(--red); }
+    .cat-addon { background: rgba(157,123,255,0.12); color: var(--purple); }
+
+    .ins-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      position: relative;
+      transition: all 0.2s;
+    }
+    .ins-card:hover { border-color: var(--border2); }
+    .ins-card.added { border-color: var(--cyan); background: rgba(0,229,160,0.03); }
+    .afford-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 8px;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .afford-green { background: rgba(0,229,160,0.15); color: var(--cyan); }
+    .afford-amber { background: rgba(232,184,75,0.15); color: var(--amber); }
+    .ins-name { font-size: 15px; font-weight: 600; font-family: var(--sans); margin-bottom: 4px; }
+    .ins-price-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    .ins-price { font-size: 22px; font-weight: 700; color: var(--text); }
+    .ins-price span { font-size: 11px; color: var(--text3); }
+    .ins-cover { font-size: 10px; color: var(--text3); }
+    .ins-features { list-style: none; margin-bottom: 14px; }
+    .ins-features li {
+      font-size: 11px;
+      color: var(--text2);
+      padding: 3px 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .ins-features li::before { content: '✓'; color: var(--cyan); font-weight: 700; font-size: 10px; }
+    .btn-add-plan {
+      width: 100%;
+      padding: 9px;
+      font-size: 10px;
+      font-family: var(--mono);
+      background: transparent;
+      border: 1px solid var(--amber2);
+      color: var(--amber2);
+      border-radius: 5px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .btn-add-plan:hover { background: rgba(232,184,75,0.08); }
+    .btn-add-plan.added-state { background: rgba(0,229,160,0.1); border-color: var(--cyan); color: var(--cyan); }
+
+    /* MONEY FLOW */
+    .money-flow {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .flow-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+    .flow-items { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+    .flow-item { text-align: center; padding: 0 16px; }
+    .flow-item-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .flow-item-val { font-size: 22px; font-weight: 700; }
+    .flow-arrow { color: var(--text3); font-size: 18px; padding: 0 4px; }
+
+    /* EXPENSE BREAKDOWN */
+    .expense-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .expense-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .expense-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .expense-name { color: var(--text2); }
+    .expense-amt { color: var(--text); font-weight: 600; }
+    .expense-pct { color: var(--text3); font-size: 10px; }
+
+    /* DASHBOARD */
+    .dash-welcome {
+      margin-bottom: 28px;
+    }
+    .dash-welcome h2 {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .dash-welcome p { font-size: 11px; color: var(--text3); }
+
+    .dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .dash-card-large {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .dash-card-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+    .trans-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .trans-row:last-child { border-bottom: none; }
+    .trans-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-right: 12px; flex-shrink: 0; }
+    .trans-info { flex: 1 }
+    .trans-name { font-size: 13px; font-weight: 600; font-family: var(--sans); }
+    .trans-date { font-size: 10px; color: var(--text3); }
+    .trans-amount { font-size: 14px; font-weight: 700; }
+
+    .ai-insight-list { list-style: none; }
+    .ai-insight-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+    .ai-insight-item:last-child { border-bottom: none; }
+    .ai-insight-item strong { color: var(--cyan); }
+
+    /* LOAN PLANNER */
+    .loan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .loan-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .loan-card-title { font-size: 12px; font-weight: 600; font-family: var(--sans); margin-bottom: 4px; }
+    .loan-card-sub { font-size: 10px; color: var(--text3); margin-bottom: 16px; }
+    .loan-form-row { margin-bottom: 14px; }
+    .loan-form-label { font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+    .loan-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+    }
+    .loan-input:focus { border-color: var(--amber); }
+    .calc-btn {
+      width: 100%;
+      padding: 11px;
+      background: var(--amber);
+      border: none;
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 0.15s;
+    }
+    .calc-btn:hover { background: var(--amber2); }
+    .emi-result {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 14px;
+      display: none;
+    }
+    .emi-result.show { display: block; }
+    .emi-result-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; border-bottom: 1px solid var(--border); }
+    .emi-result-row:last-child { border-bottom: none; }
+    .emi-result-label { color: var(--text3); }
+    .emi-result-val { font-weight: 700; }
+
+    /* GLOW EFFECTS */
+    .glow-cyan { text-shadow: 0 0 12px rgba(0,229,160,0.4); }
+    .glow-amber { text-shadow: 0 0 12px rgba(232,184,75,0.4); }
+
+    /* FADE IN */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .page.active { animation: fadeIn 0.25s ease; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      #sidebar { width: 180px; }
+      #main { margin-left: 180px; }
+      .cards-grid, .stat-row-4 { grid-template-columns: 1fr 1fr; }
+      .page { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo-area">
+    <div class="logo">Fin<span>Track</span></div>
+    <div class="logo-sub">Financial OS 2.0</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Navigate</div>
+    <div class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="nav-dot"></span>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="showPage('transactions', this)">
+      <span class="nav-dot"></span>
+      <span>Transactions</span>
+    </div>
+    <div class="nav-item" onclick="showPage('ai-insights', this)">
+      <span class="nav-dot"></span>
+      <span>AI Insights</span>
+      <span class="badge badge-ai">AI</span>
+    </div>
+    <div class="nav-item" onclick="showPage('loan-planner', this)">
+      <span class="nav-dot"></span>
+      <span>Loan Planner</span>
+    </div>
+    <div class="nav-item" onclick="showPage('emi-calc', this)">
+      <span class="nav-dot"></span>
+      <span>EMI Calc</span>
+    </div>
+    <div class="nav-item" onclick="showPage('stocks', this)">
+      <span class="nav-dot"></span>
+      <span>Stocks & Invest</span>
+      <span class="badge badge-new">NEW</span>
+    </div>
+    <div class="nav-item" onclick="showPage('insurance', this)">
+      <span class="nav-dot"></span>
+      <span>Insurance</span>
+      <span class="badge badge-new">NEW</span>
+    </div>
+    <div class="nav-item" onclick="showPage('smart-invest', this)">
+      <span class="nav-dot"></span>
+      <span>Smart Invest</span>
+      <span class="badge badge-new">NEW</span>
+    </div>
+    <div class="nav-item" onclick="showPage('settings', this)">
+      <span class="nav-dot"></span>
+      <span>Settings</span>
+    </div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-name">Arjun Sharma</div>
+    <div class="user-email">arjun@fintrack.app</div>
+    <div class="sign-out">⊗ Sign Out</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="page-dashboard" class="page active">
+    <div class="dash-welcome">
+      <h2>Good Evening, <em>Arjun</em></h2>
+      <p>Here's your financial overview for March 2026</p>
+    </div>
+
+    <div class="stat-row stat-row-4">
+      <div class="stat-card">
+        <div class="stat-label">Monthly Income</div>
+        <div class="stat-value val-cyan glow-cyan">₹87.0K</div>
+        <div class="stat-sub">+3.2% from last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Expenses</div>
+        <div class="stat-value val-red">-₹12.3K</div>
+        <div class="stat-sub">total outflow this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Free Savings</div>
+        <div class="stat-value val-white">₹74.7K</div>
+        <div class="stat-sub">86% of income</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Investable</div>
+        <div class="stat-value val-amber glow-amber">₹59.8K</div>
+        <div class="stat-sub">after emergency fund</div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-card-large">
+        <div class="dash-card-title">Recent Transactions</div>
+        <div class="trans-row">
+          <div class="trans-icon" style="background:rgba(77,166,255,0.15)">🛒</div>
+          <div class="trans-info">
+            <div class="trans-name">Amazon Shopping</div>
+            <div class="trans-date">Mar 11, 2026</div>
+          </div>
+          <div class="trans-amount val-red">-₹3,240</div>
+        </div>
+        <div class="trans-row">
+          <div class="trans-icon" style="background:rgba(0,229,160,0.1)">🍽️</div>
+          <div class="trans-info">
+            <div class="trans-name">Zomato Order</div>
+            <div class="trans-date">Mar 10, 2026</div>
+          </div>
+          <div class="trans-amount val-red">-₹640</div>
+        </div>
+        <div class="trans-row">
+          <div class="trans-icon" style="background:rgba(232,184,75,0.12)">💼</div>
+          <div class="trans-info">
+            <div class="trans-name">Salary Credit</div>
+            <div class="trans-date">Mar 1, 2026</div>
+          </div>
+          <div class="trans-amount val-cyan">+₹87,000</div>
+        </div>
+        <div class="trans-row">
+          <div class="trans-icon" style="background:rgba(157,123,255,0.12)">⚡</div>
+          <div class="trans-info">
+            <div class="trans-name">Electricity Bill</div>
+            <div class="trans-date">Mar 5, 2026</div>
+          </div>
+          <div class="trans-amount val-red">-₹1,620</div>
+        </div>
+        <div class="trans-row">
+          <div class="trans-icon" style="background:rgba(255,77,109,0.1)">🏥</div>
+          <div class="trans-info">
+            <div class="trans-name">Pharmacy</div>
+            <div class="trans-date">Mar 8, 2026</div>
+          </div>
+          <div class="trans-amount val-red">-₹640</div>
+        </div>
+      </div>
+
+      <div class="dash-card-large">
+        <div class="dash-card-title">Quick Stats</div>
+        <div style="margin-bottom:16px;">
+          <div class="stat-label">Savings Rate</div>
+          <div class="stat-value val-cyan" style="font-size:32px;">86%</div>
+          <div style="height:3px;background:var(--border2);border-radius:2px;margin-top:6px;">
+            <div style="width:86%;height:100%;background:var(--cyan);border-radius:2px;"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div class="stat-label">Portfolio Value</div>
+          <div class="stat-value val-amber" style="font-size:24px;">₹3.2L</div>
+        </div>
+        <div>
+          <div class="stat-label">Active SIPs</div>
+          <div class="stat-value val-white" style="font-size:24px;">3 Active</div>
+          <div class="stat-sub">Nifty 50, PPF, HDFC MF</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">Expense Breakdown This Month</div>
+    <div class="expense-pills">
+      <div class="expense-pill"><div class="expense-dot" style="background:#ff6432"></div><span class="expense-name">Shopping</span><span class="expense-amt">₹5.5K</span><span class="expense-pct">45%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#ffa032"></div><span class="expense-name">Food</span><span class="expense-amt">₹3.6K</span><span class="expense-pct">30%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#4da6ff"></div><span class="expense-name">Transport</span><span class="expense-amt">₹0.2K</span><span class="expense-pct">2%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#9d7bff"></div><span class="expense-name">Entertainment</span><span class="expense-amt">₹0.6K</span><span class="expense-pct">5%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#00e5a0"></div><span class="expense-name">Utilities</span><span class="expense-amt">₹1.6K</span><span class="expense-pct">13%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#ff4d6d"></div><span class="expense-name">Healthcare</span><span class="expense-amt">₹0.6K</span><span class="expense-pct">5%</span></div>
+    </div>
+  </div>
+
+  <!-- ===== TRANSACTIONS ===== -->
+  <div id="page-transactions" class="page">
+    <div class="page-label">Finance</div>
+    <div class="page-title">Transaction <em>History</em></div>
+    <div class="page-subtitle">All your income and expenses in one place</div>
+    <div class="table-section">
+      <div class="table-title">All Transactions — March 2026</div>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Balance</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Mar 11</td><td class="td-name">🛒 Amazon Shopping</td><td>Shopping</td><td class="val-red">-₹3,240</td><td>₹83,760</td></tr>
+          <tr><td>Mar 10</td><td class="td-name">🍽️ Zomato Order</td><td>Food</td><td class="val-red">-₹640</td><td>₹87,000</td></tr>
+          <tr><td>Mar 8</td><td class="td-name">🏥 Pharmacy</td><td>Healthcare</td><td class="val-red">-₹640</td><td>₹87,640</td></tr>
+          <tr><td>Mar 5</td><td class="td-name">⚡ Electricity Bill</td><td>Utilities</td><td class="val-red">-₹1,620</td><td>₹88,280</td></tr>
+          <tr><td>Mar 3</td><td class="td-name">🚌 Ola Cab</td><td>Transport</td><td class="val-red">-₹240</td><td>₹89,900</td></tr>
+          <tr><td>Mar 1</td><td class="td-name">💼 Salary Credit</td><td>Income</td><td class="val-cyan">+₹87,000</td><td>₹90,140</td></tr>
+          <tr><td>Feb 28</td><td class="td-name">🎬 Netflix</td><td>Entertainment</td><td class="val-red">-₹649</td><td>₹3,140</td></tr>
+          <tr><td>Feb 25</td><td class="td-name">🍕 Swiggy</td><td>Food</td><td class="val-red">-₹420</td><td>₹3,789</td></tr>
+          <tr><td>Feb 22</td><td class="td-name">📱 Phone Recharge</td><td>Utilities</td><td class="val-red">-₹299</td><td>₹4,209</td></tr>
+          <tr><td>Feb 20</td><td class="td-name">🛍️ Myntra</td><td>Shopping</td><td class="val-red">-₹2,199</td><td>₹4,508</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== AI INSIGHTS ===== -->
+  <div id="page-ai-insights" class="page">
+    <div class="page-label">AI · Powered by your data</div>
+    <div class="page-title">AI <em>Insights</em></div>
+    <div class="page-subtitle">Personalised analysis based on your spending patterns and financial behaviour</div>
+
+    <div class="stat-row stat-row-4">
+      <div class="stat-card" style="border-color:rgba(0,229,160,0.2)">
+        <div class="stat-label">Financial Health Score</div>
+        <div class="stat-value val-cyan">92/100</div>
+        <div class="stat-sub">Excellent 🟢</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Savings Score</div>
+        <div class="stat-value val-amber">A+</div>
+        <div class="stat-sub">Top 5% of users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Spending Efficiency</div>
+        <div class="stat-value val-white">86%</div>
+        <div class="stat-sub">Low wasteful spend</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Wealth Trajectory</div>
+        <div class="stat-value val-cyan">↑ Fast</div>
+        <div class="stat-sub">Compound growth path</div>
+      </div>
+    </div>
+
+    <div class="dash-card-large" style="margin-bottom:20px;">
+      <div class="dash-card-title">AI Analysis & Recommendations</div>
+      <ul class="ai-insight-list">
+        <li class="ai-insight-item">💡 <strong>Strong savings habit detected.</strong> You're saving 86% of income, which is exceptional. Consider increasing SIP allocation to ₹40K/month to accelerate wealth creation.</li>
+        <li class="ai-insight-item">⚠️ <strong>Shopping spike alert.</strong> Shopping expenses are 45% of total spend — higher than your 3-month average of 32%. Consider setting a ₹4K monthly cap.</li>
+        <li class="ai-insight-item">📈 <strong>Investment opportunity.</strong> Based on your ₹59.8K investable surplus, adding a Midcap 150 SIP of ₹15K could yield additional ₹250K+ over 5 years.</li>
+        <li class="ai-insight-item">🛡️ <strong>Insurance gap identified.</strong> Your current coverage score is 100/100 but you may be over-insured. Review vehicle insurance — third-party only may suffice based on car age.</li>
+        <li class="ai-insight-item">🏦 <strong>Tax optimisation.</strong> You have ₹1.5L 80C budget remaining. PPF contribution of ₹12,500/month will fully utilise it and save ₹46,800 in taxes.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== LOAN PLANNER ===== -->
+  <div id="page-loan-planner" class="page">
+    <div class="page-label">Finance Tools</div>
+    <div class="page-title">Loan <em>Planner</em></div>
+    <div class="page-subtitle">Compare loans and plan your borrowing smartly</div>
+    <div class="loan-grid">
+      <div class="loan-card">
+        <div class="loan-card-title">Home Loan Calculator</div>
+        <div class="loan-card-sub">Estimate your home loan EMI</div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Loan Amount (₹)</label>
+          <input type="number" class="loan-input" id="home-principal" placeholder="5000000" value="5000000">
+        </div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Interest Rate (% p.a.)</label>
+          <input type="number" class="loan-input" id="home-rate" placeholder="8.5" value="8.5">
+        </div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Tenure (Years)</label>
+          <input type="number" class="loan-input" id="home-tenure" placeholder="20" value="20">
+        </div>
+        <button class="calc-btn" onclick="calcEMI('home')">Calculate EMI →</button>
+        <div class="emi-result" id="home-result">
+          <div class="emi-result-row"><span class="emi-result-label">Monthly EMI</span><span class="emi-result-val val-amber" id="home-emi">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Total Payment</span><span class="emi-result-val" id="home-total">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Total Interest</span><span class="emi-result-val val-red" id="home-interest">—</span></div>
+        </div>
+      </div>
+      <div class="loan-card">
+        <div class="loan-card-title">Car Loan Calculator</div>
+        <div class="loan-card-sub">Plan your vehicle financing</div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Loan Amount (₹)</label>
+          <input type="number" class="loan-input" id="car-principal" placeholder="800000" value="800000">
+        </div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Interest Rate (% p.a.)</label>
+          <input type="number" class="loan-input" id="car-rate" placeholder="9.5" value="9.5">
+        </div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Tenure (Years)</label>
+          <input type="number" class="loan-input" id="car-tenure" placeholder="5" value="5">
+        </div>
+        <button class="calc-btn" onclick="calcEMI('car')">Calculate EMI →</button>
+        <div class="emi-result" id="car-result">
+          <div class="emi-result-row"><span class="emi-result-label">Monthly EMI</span><span class="emi-result-val val-amber" id="car-emi">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Total Payment</span><span class="emi-result-val" id="car-total">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Total Interest</span><span class="emi-result-val val-red" id="car-interest">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EMI CALC ===== -->
+  <div id="page-emi-calc" class="page">
+    <div class="page-label">Finance Tools</div>
+    <div class="page-title">EMI <em>Calculator</em></div>
+    <div class="page-subtitle">Calculate equated monthly installments for any loan</div>
+    <div class="loan-grid">
+      <div class="loan-card" style="grid-column: span 1;">
+        <div class="loan-card-title">EMI Calculator</div>
+        <div class="loan-card-sub">Enter loan details to compute EMI</div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Principal Amount (₹)</label>
+          <input type="number" class="loan-input" id="emi-p" placeholder="1000000" value="1000000">
+        </div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Annual Interest Rate (%)</label>
+          <input type="number" class="loan-input" id="emi-r" placeholder="10" value="10">
+        </div>
+        <div class="loan-form-row">
+          <label class="loan-form-label">Loan Duration (Months)</label>
+          <input type="number" class="loan-input" id="emi-n" placeholder="60" value="60">
+        </div>
+        <button class="calc-btn" onclick="calcEMIMain()">Compute →</button>
+        <div class="emi-result" id="main-emi-result">
+          <div class="emi-result-row"><span class="emi-result-label">Monthly EMI</span><span class="emi-result-val val-amber" id="main-emi">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Total Amount</span><span class="emi-result-val" id="main-total">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Total Interest</span><span class="emi-result-val val-red" id="main-interest">—</span></div>
+          <div class="emi-result-row"><span class="emi-result-label">Interest %</span><span class="emi-result-val" id="main-pct">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STOCKS ===== -->
+  <div id="page-stocks" class="page">
+    <div class="page-label">Yahoo Finance · Demo</div>
+    <div class="page-title">Stocks & <em>Investments</em></div>
+    <div class="page-subtitle">AI-personalised suggestions · ₹43K/month investable surplus</div>
+
+    <div class="stat-row stat-row-4" style="margin-bottom:20px;">
+      <div class="stat-card">
+        <div class="stat-label">Monthly Investable</div>
+        <div class="stat-value val-white">₹43K</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">SIP Suggestion</div>
+        <div class="stat-value val-cyan">₹15.1K/mo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Direct Stocks</div>
+        <div class="stat-value val-amber">₹6.5K/mo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">My Watchlist</div>
+        <div class="stat-value val-white" id="watchlist-count">0 stocks</div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('watchlist', this)">◈ Watchlist</button>
+      <button class="tab-btn" onclick="showTab('ai-picks', this)">◆ AI Picks <span class="badge badge-ai" style="margin-left:4px;">AI</span></button>
+      <button class="tab-btn" onclick="showTab('search', this)">⌕ Search</button>
+      <button class="tab-btn" onclick="showTab('my-watchlist', this)">☰ My Watchlist</button>
+      <button class="tab-btn" onclick="showTab('movers', this)">⇅ Movers</button>
+    </div>
+
+    <!-- WATCHLIST TAB -->
+    <div id="tab-watchlist" class="tab-content active">
+      <div class="risk-bar">
+        <span class="risk-label">Risk Profile:</span>
+        <button class="risk-btn active" onclick="switchRisk('conservative', this)">● Conservative</button>
+        <button class="risk-btn" onclick="switchRisk('moderate', this)">◆ Moderate</button>
+        <button class="risk-btn" onclick="switchRisk('aggressive', this)">▲ Aggressive</button>
+        <button class="risk-btn" onclick="switchRisk('global', this)">◉ Global</button>
+      </div>
+      <div class="stock-info-line" id="risk-desc">● Large-cap Indian blue chips – steady dividends, low volatility</div>
+      <div class="gaining-bar">
+        <div class="gain-badge gain-up">▲ 3 Gaining</div>
+        <div class="gain-badge gain-down">▼ 2 Declining</div>
+        <button class="refresh-btn">↻ Refresh</button>
+      </div>
+      <div class="cards-grid" id="watchlist-stocks"></div>
+    </div>
+
+    <!-- AI PICKS TAB -->
+    <div id="tab-ai-picks" class="tab-content">
+      <div style="margin-bottom:16px;">
+        <div class="section-header">AI Stock Recommendations · Global Profile</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:20px;">Personalised picks based on your ₹43K monthly surplus and risk tolerance.</div>
+      </div>
+      <div class="cards-grid" id="ai-picks-grid"></div>
+    </div>
+
+    <!-- SEARCH TAB -->
+    <div id="tab-search" class="tab-content">
+      <div class="search-box-wrap">
+        <div class="search-label">Search Any Stock</div>
+        <div class="search-input-row">
+          <input class="search-input" placeholder="RELIANCE.NS · TCS.NS · AAPL · NVDA" id="stock-search-input">
+          <button class="search-btn" onclick="doSearch()">Search →</button>
+        </div>
+        <div class="search-hint">Indian NSE stocks: add .NS suffix · US stocks: plain ticker (AAPL, MSFT, NVDA)</div>
+      </div>
+      <div class="quick-wrap">
+        <div class="search-label">Quick Search</div>
+        <div class="quick-pills">
+          <div class="quick-pill" onclick="setSearch('RELIANCE.NS')">RELIANCE.NS</div>
+          <div class="quick-pill" onclick="setSearch('TCS.NS')">TCS.NS</div>
+          <div class="quick-pill" onclick="setSearch('INFY.NS')">INFY.NS</div>
+          <div class="quick-pill" onclick="setSearch('HDFCBANK.NS')">HDFCBANK.NS</div>
+          <div class="quick-pill" onclick="setSearch('ZOMATO.NS')">ZOMATO.NS</div>
+          <div class="quick-pill" onclick="setSearch('AAPL')">AAPL</div>
+          <div class="quick-pill" onclick="setSearch('MSFT')">MSFT</div>
+          <div class="quick-pill" onclick="setSearch('NVDA')">NVDA</div>
+          <div class="quick-pill" onclick="setSearch('AMZN')">AMZN</div>
+          <div class="quick-pill" onclick="setSearch('GOOGL')">GOOGL</div>
+        </div>
+      </div>
+      <div id="search-result" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- MY WATCHLIST TAB -->
+    <div id="tab-my-watchlist" class="tab-content">
+      <div id="my-watchlist-content" style="font-size:13px;color:var(--text3);padding:40px 0;text-align:center;">
+        No stocks in your watchlist yet. Add stocks from the Watchlist or AI Picks tabs.
+      </div>
+    </div>
+
+    <!-- MOVERS TAB -->
+    <div id="tab-movers" class="tab-content">
+      <div class="movers-grid">
+        <div>
+          <div class="section-header">Sector Heatmap — Today</div>
+          <div class="heatmap-grid">
+            <div class="heat-cell heat-green"><div class="heat-change">▲ 1.8%</div><div class="heat-name">IT / Tech</div><div class="heat-count">2 stocks</div></div>
+            <div class="heat-cell heat-green"><div class="heat-change">▲ 0.9%</div><div class="heat-name">Banking</div><div class="heat-count">2 stocks</div></div>
+            <div class="heat-cell heat-green"><div class="heat-change">▲ 1.2%</div><div class="heat-name">Energy</div><div class="heat-count">1 stock</div></div>
+            <div class="heat-cell heat-green"><div class="heat-change">▲ 1.1%</div><div class="heat-name">Auto</div><div class="heat-count">1 stock</div></div>
+            <div class="heat-cell heat-red"><div class="heat-change">▼ 0.6%</div><div class="heat-name">Consumer</div><div class="heat-count">2 stocks</div></div>
+            <div class="heat-cell heat-red"><div class="heat-change">▼ 1.2%</div><div class="heat-name">Finance</div><div class="heat-count">1 stock</div></div>
+            <div class="heat-cell heat-green"><div class="heat-change">▲ 2.5%</div><div class="heat-name">New-Age Tech</div><div class="heat-count">3 stocks</div></div>
+            <div class="heat-cell heat-green"><div class="heat-change">▲ 1.6%</div><div class="heat-name">Global Tech</div><div class="heat-count">5 stocks</div></div>
+          </div>
+        </div>
+        <div class="movers-list">
+          <div class="movers-header">
+            <div class="movers-title">Market Movers</div>
+            <div class="mover-toggle">
+              <button class="mover-btn active-gain" id="gain-btn" onclick="showMovers('gain')">▲ Gainers</button>
+              <button class="mover-btn" id="loss-btn" onclick="showMovers('loss')">▼ Losers</button>
+            </div>
+          </div>
+          <div id="movers-list-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== INSURANCE ===== -->
+  <div id="page-insurance" class="page">
+    <div class="page-label">Insurance Planner · Powered by your transactions</div>
+    <div class="page-title">Insurance <em>Affordability</em></div>
+    <div class="page-subtitle">Personalised coverage recommendations based on your income and spending</div>
+
+    <div class="stat-row stat-row-4">
+      <div class="stat-card">
+        <div class="stat-label">Monthly Income</div>
+        <div class="stat-value val-cyan">₹87.0K</div>
+        <div class="stat-sub">from transactions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Monthly Expenses</div>
+        <div class="stat-value val-red">₹12.3K</div>
+        <div class="stat-sub">total outflow</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Net Savings</div>
+        <div class="stat-value val-white">₹74.7K</div>
+        <div class="stat-sub">86% of income</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Insurance Budget</div>
+        <div class="stat-value val-amber">₹9.0K</div>
+        <div class="stat-sub">12% of savings / mo</div>
+      </div>
+    </div>
+
+    <div class="insurance-overview">
+      <div class="coverage-score-card">
+        <div class="score-circle">
+          <div class="score-num">100</div>
+          <div class="score-denom">/ 100</div>
+        </div>
+        <div class="score-label">Well Protected</div>
+        <div class="score-sub">10 plans within budget</div>
+      </div>
+      <div class="savings-breakdown">
+        <div class="savings-title">How Your Savings Break Down</div>
+        <div class="savings-row">
+          <div class="savings-row-top">
+            <div><div class="savings-row-name">Existing Healthcare Spend</div><div class="savings-row-sub">pharmacy & clinic visits</div></div>
+            <div><div class="savings-row-amount val-red">₹640</div><div class="savings-row-pct">1% of income</div></div>
+          </div>
+          <div class="sbar"><div class="sbar-fill" style="width:1%;background:var(--red)"></div></div>
+        </div>
+        <div class="savings-row">
+          <div class="savings-row-top">
+            <div><div class="savings-row-name">Recommended Insurance</div><div class="savings-row-sub">12% of savings — ideal allocation</div></div>
+            <div><div class="savings-row-amount val-amber">₹8,967</div><div class="savings-row-pct">12% of income</div></div>
+          </div>
+          <div class="sbar"><div class="sbar-fill" style="width:12%;background:var(--amber)"></div></div>
+        </div>
+        <div class="savings-row">
+          <div class="savings-row-top">
+            <div><div class="savings-row-name">Remaining Free Savings</div><div class="savings-row-sub">for investments & emergencies</div></div>
+            <div><div class="savings-row-amount val-cyan">₹65,755</div><div class="savings-row-pct">76% of income</div></div>
+          </div>
+          <div class="sbar"><div class="sbar-fill" style="width:76%;background:var(--cyan)"></div></div>
+        </div>
+        <div class="smart-insight-box">
+          <div class="smart-insight-title">◆ Smart Insight</div>
+          With ₹74,722 monthly savings, you can comfortably allocate ₹8,967/mo for insurance premiums — covering health, term life & personal accident with ₹66,372 surplus.
+        </div>
+      </div>
+    </div>
+
+    <!-- Health Insurance -->
+    <div class="insurance-category">
+      <div class="insurance-category-header">
+        <span class="cat-icon">❤️</span>
+        <span class="cat-name">Health Insurance</span>
+        <span class="cat-badge cat-recommended">Recommended</span>
+      </div>
+      <div class="cards-grid">
+        <div class="ins-card" id="ins-basic-health">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">Basic Health Cover</div>
+          <div class="ins-price-row"><div class="ins-price">₹300<span>/month</span></div><div class="ins-cover">Cover: 3L</div></div>
+          <ul class="ins-features"><li>Hospitalisation</li><li>Day care</li><li>Ambulance cover</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-basic-health')">ADD TO MY PLAN →</button>
+        </div>
+        <div class="ins-card" id="ins-family-floater">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">Family Floater Plan</div>
+          <div class="ins-price-row"><div class="ins-price">₹1,200<span>/month</span></div><div class="ins-cover">Cover: 10L</div></div>
+          <ul class="ins-features"><li>Family of 4</li><li>Pre-existing (3yr wait)</li><li>Cashless at 6000+ hospitals</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-family-floater')">ADD TO MY PLAN →</button>
+        </div>
+        <div class="ins-card" id="ins-super-topup">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">Super Top-Up Plan</div>
+          <div class="ins-price-row"><div class="ins-price">₹800<span>/month</span></div><div class="ins-cover">Cover: 20L</div></div>
+          <ul class="ins-features"><li>Above deductible ₹3L</li><li>Critical illness add-on</li><li>Maternity cover</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-super-topup')">ADD TO MY PLAN →</button>
+        </div>
+        <div class="ins-card" id="ins-critical">
+          <span class="afford-badge afford-amber">AFFORDABLE</span>
+          <div class="ins-name">Critical Illness Cover</div>
+          <div class="ins-price-row"><div class="ins-price">₹1,500<span>/month</span></div><div class="ins-cover">Cover: 25L</div></div>
+          <ul class="ins-features"><li>40 illnesses covered</li><li>Lump-sum payout</li><li>Cancer, Heart, Stroke</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-critical')">ADD TO MY PLAN →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Term Life -->
+    <div class="insurance-category">
+      <div class="insurance-category-header">
+        <span class="cat-icon">🛡️</span>
+        <span class="cat-name">Term Life Insurance</span>
+        <span class="cat-badge cat-essential">Essential</span>
+      </div>
+      <div class="cards-grid">
+        <div class="ins-card" id="ins-basic-term">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">Basic Term Plan</div>
+          <div class="ins-price-row"><div class="ins-price">₹600<span>/month</span></div><div class="ins-cover">Cover: 50L</div></div>
+          <ul class="ins-features"><li>Pure protection</li><li>30yr term</li><li>Tax benefit u/s 80C</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-basic-term')">ADD TO MY PLAN →</button>
+        </div>
+        <div class="ins-card" id="ins-return-premium">
+          <span class="afford-badge afford-amber">AFFORDABLE</span>
+          <div class="ins-name">Return of Premium</div>
+          <div class="ins-price-row"><div class="ins-price">₹1,800<span>/month</span></div><div class="ins-cover">Cover: 1Cr</div></div>
+          <ul class="ins-features"><li>Premiums refunded on survival</li><li>Accidental death rider</li><li>Waiver of premium</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-return-premium')">ADD TO MY PLAN →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle Insurance -->
+    <div class="insurance-category">
+      <div class="insurance-category-header">
+        <span class="cat-icon">🚗</span>
+        <span class="cat-name">Vehicle Insurance</span>
+        <span class="cat-badge cat-mandatory">Mandatory</span>
+      </div>
+      <div class="cards-grid">
+        <div class="ins-card" id="ins-third-party">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">Third-Party Only</div>
+          <div class="ins-price-row"><div class="ins-price">₹300<span>/month</span></div><div class="ins-cover">Cover: As per law</div></div>
+          <ul class="ins-features"><li>Legal mandate</li><li>Liability cover</li><li>Zero own-damage</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-third-party')">ADD TO MY PLAN →</button>
+        </div>
+        <div class="ins-card" id="ins-comprehensive">
+          <span class="afford-badge afford-amber">AFFORDABLE</span>
+          <div class="ins-name">Comprehensive Plan</div>
+          <div class="ins-price-row"><div class="ins-price">₹900<span>/month</span></div><div class="ins-cover">Cover: Market value</div></div>
+          <ul class="ins-features"><li>Own damage</li><li>Natural calamity</li><li>Theft protection</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-comprehensive')">ADD TO MY PLAN →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Accident -->
+    <div class="insurance-category">
+      <div class="insurance-category-header">
+        <span class="cat-icon">⚡</span>
+        <span class="cat-name">Personal Accident</span>
+        <span class="cat-badge cat-addon">Smart Add-On</span>
+      </div>
+      <div class="cards-grid">
+        <div class="ins-card" id="ins-pa-basic">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">PA Basic</div>
+          <div class="ins-price-row"><div class="ins-price">₹200<span>/month</span></div><div class="ins-cover">Cover: 5L</div></div>
+          <ul class="ins-features"><li>Accidental death</li><li>Permanent disability</li><li>Hospital cash</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-pa-basic')">ADD TO MY PLAN →</button>
+        </div>
+        <div class="ins-card" id="ins-pa-comp">
+          <span class="afford-badge afford-green">AFFORDABLE</span>
+          <div class="ins-name">PA Comprehensive</div>
+          <div class="ins-price-row"><div class="ins-price">₹550<span>/month</span></div><div class="ins-cover">Cover: 15L</div></div>
+          <ul class="ins-features"><li>Temporary disability</li><li>Income protection</li><li>Education benefit for kids</li></ul>
+          <button class="btn-add-plan" onclick="togglePlan(this, 'ins-pa-comp')">ADD TO MY PLAN →</button>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-top:8px;line-height:1.6;padding:16px;background:var(--card);border-radius:8px;border:1px solid var(--border);">
+      ⚠ Premiums shown are indicative estimates for a 30-year individual in India. Actual premiums depend on age, health history, insured & co-insured. Always consult a certified financial advisor before purchasing insurance. Data sourced from your transaction history.
+    </div>
+  </div>
+
+  <!-- ===== SMART INVEST ===== -->
+  <div id="page-smart-invest" class="page">
+    <div class="page-label">Smart Invest · Built from your spending data</div>
+    <div class="page-title">Investment <em>Planner</em></div>
+    <div class="page-subtitle">AI-powered allocation based on your actual monthly cash flow</div>
+
+    <!-- Money Flow -->
+    <div class="money-flow">
+      <div class="flow-label">Your Monthly Money Flow</div>
+      <div class="flow-items">
+        <div class="flow-item"><div class="flow-item-label">Income</div><div class="flow-item-val val-cyan">₹87.0K</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item"><div class="flow-item-label">All Expenses</div><div class="flow-item-val val-red">-₹12.3K</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item"><div class="flow-item-label">Free Savings</div><div class="flow-item-val val-white">₹74.7K</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item"><div class="flow-item-label">Emergency (20%)</div><div class="flow-item-val val-red">-₹14.9K</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item"><div class="flow-item-label">Investable</div><div class="flow-item-val val-amber">₹59.8K</div></div>
+      </div>
+    </div>
+
+    <!-- Expense Breakdown -->
+    <div class="section-header">Expense Breakdown</div>
+    <div class="expense-pills" style="margin-bottom:28px;">
+      <div class="expense-pill"><div class="expense-dot" style="background:#ff6432"></div><span class="expense-name">Shopping</span><span class="expense-amt">₹5.5K</span><span class="expense-pct">45%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#ffa032"></div><span class="expense-name">Food</span><span class="expense-amt">₹3.6K</span><span class="expense-pct">30%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#4da6ff"></div><span class="expense-name">Transport</span><span class="expense-amt">₹0.2K</span><span class="expense-pct">2%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#9d7bff"></div><span class="expense-name">Entertainment</span><span class="expense-amt">₹0.6K</span><span class="expense-pct">5%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#00e5a0"></div><span class="expense-name">Utilities</span><span class="expense-amt">₹1.6K</span><span class="expense-pct">13%</span></div>
+      <div class="expense-pill"><div class="expense-dot" style="background:#ff4d6d"></div><span class="expense-name">Healthcare</span><span class="expense-amt">₹0.6K</span><span class="expense-pct">5%</span></div>
+    </div>
+
+    <!-- How Much to Invest -->
+    <div class="section-header">How Much Should You Invest?</div>
+    <div class="alloc-grid" style="margin-bottom:24px;">
+      <div class="alloc-card">
+        <div class="alloc-card-label"><div class="alloc-dot" style="background:var(--cyan)"></div>Conservative</div>
+        <div class="alloc-amount val-cyan">₹17.9K</div>
+        <div class="alloc-sub">30% of investable surplus</div>
+        <div class="alloc-bar"><div class="alloc-bar-fill" style="width:30%;background:var(--cyan)"></div></div>
+      </div>
+      <div class="alloc-card" style="border-color:rgba(232,184,75,0.3)">
+        <div class="alloc-card-label"><div class="alloc-dot" style="background:var(--amber)"></div>Moderate</div>
+        <div class="alloc-amount val-amber">₹29.9K</div>
+        <div class="alloc-sub">50% of investable surplus</div>
+        <div class="alloc-bar"><div class="alloc-bar-fill" style="width:50%;background:var(--amber)"></div></div>
+      </div>
+      <div class="alloc-card">
+        <div class="alloc-card-label"><div class="alloc-dot" style="background:var(--blue)"></div>Aggressive</div>
+        <div class="alloc-amount" style="color:var(--blue)">₹47.8K</div>
+        <div class="alloc-sub">80% of investable surplus</div>
+        <div class="alloc-bar"><div class="alloc-bar-fill" style="width:80%;background:var(--blue)"></div></div>
+      </div>
+    </div>
+
+    <!-- Slider -->
+    <div class="slider-section">
+      <div class="slider-header">
+        <span class="slider-label">Monthly Investment Amount</span>
+        <span class="slider-value" id="slider-display">₹30,000</span>
+      </div>
+      <input type="range" min="500" max="60000" value="30000" id="invest-slider" oninput="updateSlider(this.value)">
+      <div class="slider-limits"><span>₹500 min</span><span>₹60K max (investable)</span></div>
+    </div>
+
+    <!-- Investment Options -->
+    <div class="section-header">Where to Invest — Pick One to Model Growth</div>
+    <div class="cards-grid" id="invest-cards"></div>
+
+    <!-- Growth Projection Chart -->
+    <div class="chart-section" id="chart-section">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title-label">◆ Growth Projection · <span id="selected-invest-name">Nifty 50 Index SIP</span></div>
+          <div class="chart-title">Monthly SIP of <span id="chart-sip-amount">₹30,000</span></div>
+        </div>
+        <div class="chart-time-btns">
+          <button class="time-btn" onclick="setTimeframe(1, this)">1yr</button>
+          <button class="time-btn" onclick="setTimeframe(3, this)">3yr</button>
+          <button class="time-btn" onclick="setTimeframe(5, this)">5yr</button>
+          <button class="time-btn active" onclick="setTimeframe(8, this)">8yr</button>
+          <button class="time-btn" onclick="setTimeframe(15, this)">15yr</button>
+          <button class="time-btn" onclick="setTimeframe(20, this)">20yr</button>
+        </div>
+      </div>
+      <div class="chart-stats">
+        <div class="chart-stat"><div class="chart-stat-label">You Invest</div><div class="chart-stat-val val-white" id="cs-invest">—</div></div>
+        <div class="chart-stat"><div class="chart-stat-label">Expected Value</div><div class="chart-stat-val val-cyan" id="cs-expected">—</div></div>
+        <div class="chart-stat"><div class="chart-stat-label">Total Gain</div><div class="chart-stat-val val-amber" id="cs-gain">—</div></div>
+        <div class="chart-stat"><div class="chart-stat-label">Multiplier</div><div class="chart-stat-val val-white" id="cs-mult">—</div></div>
+      </div>
+      <canvas id="growthChart"></canvas>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-line" style="background:var(--cyan)"></div>Expected growth</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--blue);border-top:2px dashed var(--blue);height:0"></div>Optimistic scenario</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--amber);border-top:2px dashed var(--amber);height:0"></div>Conservative scenario</div>
+        <div class="legend-item"><div class="legend-line" style="background:var(--text3);border-top:2px dashed var(--text3);height:0"></div>Amount invested</div>
+      </div>
+    </div>
+
+    <!-- Full Comparison Table -->
+    <div class="table-section">
+      <div class="table-title">Full Comparison — ₹<span id="table-sip">30,000</span>/mo over 5 Years</div>
+      <table>
+        <thead>
+          <tr><th>Option</th><th>Type</th><th>Rate</th><th>You Invest</th><th>You Get</th><th>Gain</th><th>Risk</th></tr>
+        </thead>
+        <tbody id="comparison-table"></tbody>
+      </table>
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-top:8px;line-height:1.6;">⚠ Projections are based on historical averages and are not guaranteed. Mutual fund investments are subject to market risks. Past performance is not indicative of future results.</div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+  <div id="page-settings" class="page">
+    <div class="page-label">Preferences</div>
+    <div class="page-title"><em>Settings</em></div>
+    <div class="page-subtitle">Manage your account and app preferences</div>
+    <div class="loan-grid">
+      <div class="loan-card">
+        <div class="loan-card-title">Profile Settings</div>
+        <div class="loan-card-sub">Update your personal details</div>
+        <div class="loan-form-row"><label class="loan-form-label">Full Name</label><input class="loan-input" value="Arjun Sharma"></div>
+        <div class="loan-form-row"><label class="loan-form-label">Email</label><input class="loan-input" value="arjun@fintrack.app"></div>
+        <div class="loan-form-row"><label class="loan-form-label">Monthly Income (₹)</label><input class="loan-input" value="87000"></div>
+        <button class="calc-btn">Save Changes</button>
+      </div>
+      <div class="loan-card">
+        <div class="loan-card-title">App Preferences</div>
+        <div class="loan-card-sub">Customize your experience</div>
+        <div class="loan-form-row"><label class="loan-form-label">Risk Profile</label>
+          <select class="loan-input" style="cursor:pointer;">
+            <option>Conservative</option><option>Moderate</option><option selected>Aggressive</option><option>Global</option>
+          </select>
+        </div>
+        <div class="loan-form-row"><label class="loan-form-label">Currency Display</label>
+          <select class="loan-input" style="cursor:pointer;">
+            <option selected>INR (₹)</option><option>USD ($)</option><option>Both</option>
+          </select>
+        </div>
+        <div class="loan-form-row"><label class="loan-form-label">Theme</label>
+          <select class="loan-input" style="cursor:pointer;"><option selected>Dark Mode</option></select>
+        </div>
+        <button class="calc-btn">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ============ DATA ============
+const investmentOptions = [
+  { id:'nifty50', icon:'📊', name:'Nifty 50 Index SIP', type:'Mutual Fund', risk:'Low-Medium', riskClass:'risk-low-med', rate:'10-14% p.a.', desc:"Tracks India's top 50 companies. Best for long-term wealth creation with minimal effort.", tags:['Diversified','Tax Efficient','ELSS available'], rateNum:0.12 },
+  { id:'midcap150', icon:'🚀', name:'Midcap 150 SIP', type:'Mutual Fund', risk:'Medium', riskClass:'risk-medium', rate:'13-18% p.a.', desc:'Mid-size companies with higher growth potential. Suitable for 5+ year horizon.', tags:['High Growth','5yr+ horizon','Volatile short-term'], rateNum:0.155 },
+  { id:'ppf', icon:'🏛️', name:'PPF (Public Provident Fund)', type:'Government Scheme', risk:'Zero Risk', riskClass:'risk-zero', rate:'7.1% p.a.', desc:"Government-backed, completely tax-free. Best for conservative investors seeking safety.", tags:['Tax-Free Returns','80C Deduction','15yr lock-in'], rateNum:0.071 },
+  { id:'nps', icon:'🌿', name:'NPS (National Pension System)', type:'Pension', risk:'Low-Medium', riskClass:'risk-low-med', rate:'8-10% p.a.', desc:"Great for retirement planning. Extra ₹50K tax deduction over 80C under 80CCD(1B).", tags:['Retirement Focus','Extra 50K deduction','Market-linked'], rateNum:0.09 },
+  { id:'bluechip', icon:'📈', name:'Blue-chip Stocks (Direct)', type:'Direct Equity', risk:'Medium-High', riskClass:'risk-med-high', rate:'12-20% p.a.', desc:'Reliance, HDFC, TCS, Infosys etc. Higher returns but requires active tracking.', tags:['Direct ownership','Dividend income','Research needed'], rateNum:0.16 },
+  { id:'fd', icon:'🏦', name:'Fixed Deposit (Bank FD)', type:'Fixed Income', risk:'Zero Risk', riskClass:'risk-zero', rate:'6.5-7.5% p.a.', desc:'Safe, predictable returns. Good for parking emergency fund or short-term goals.', tags:['Guaranteed returns','Flexible tenure','Premature withdrawal'], rateNum:0.07 },
+  { id:'sgb', icon:'🥇', name:'Sovereign Gold Bond (SGB)', type:'Gold', risk:'Low', riskClass:'risk-low', rate:'8-13% p.a.', desc:'Best way to invest in gold. Earns 2.5% p.a. interest + gold appreciation. 8yr tenure.', tags:['Gold + 2.5% interest','No storage risk','Tax-free on maturity'], rateNum:0.105 },
+  { id:'reits', icon:'🏢', name:'REITs (Real Estate)', type:'Real Estate', risk:'Low-Medium', riskClass:'risk-low-med', rate:'7-10% p.a.', desc:'Invest in commercial real estate without buying property. Listed on NSE/BSE.', tags:['Rental income','Quarterly dividends','Commercial RE'], rateNum:0.085 },
+];
+
+const riskProfiles = {
+  conservative: { desc: '● Large-cap Indian blue chips – steady dividends, low volatility', stocks: ['reliance','tcs','hdfc','infy','itc'] },
+  moderate: { desc: '◆ Balanced mix of blue chips and midcap growth stocks', stocks: ['zomato','paytm','reliance','tcs','bajajfin'] },
+  aggressive: { desc: '▲ High-growth small/mid cap – fintech & new-age sectors', stocks: ['zomato','nykaa','paytm','delhivery','policybazaar'] },
+  global: { desc: '◉ US mega-caps – global diversification from INR portfolio', stocks: ['aapl','msft','googl','amzn','nvda'] },
+};
+
+const stocksDB = {
+  reliance: { ticker:'RELIANCE.NS', sector:'ENERGY', sectorClass:'sector-energy', name:'Reliance Industries', price:'₹2,847.6', change:'+34.20', changePct:'+1.22%', up:true, low:'₹2810', high:'₹2860', rangePct:70 },
+  tcs: { ticker:'TCS.NS', sector:'IT', sectorClass:'sector-tech', name:'Tata Consultancy Svcs', price:'₹3,921.15', change:'-18.50', changePct:'-0.47%', up:false, low:'₹3898', high:'₹3945', rangePct:45 },
+  hdfc: { ticker:'HDFCBANK.NS', sector:'FINANCE', sectorClass:'sector-finance', name:'HDFC Bank', price:'₹1,720.40', change:'+12.30', changePct:'+0.72%', up:true, low:'₹1705', high:'₹1728', rangePct:75 },
+  infy: { ticker:'INFY.NS', sector:'IT', sectorClass:'sector-tech', name:'Infosys Ltd', price:'₹1,842.55', change:'+22.15', changePct:'+1.22%', up:true, low:'₹1825', high:'₹1855', rangePct:60 },
+  itc: { ticker:'ITC.NS', sector:'FMCG', sectorClass:'sector-energy', name:'ITC Limited', price:'₹488.20', change:'-3.40', changePct:'-0.69%', up:false, low:'₹482', high:'₹494', rangePct:50 },
+  zomato: { ticker:'ZOMATO.NS', sector:'TECH', sectorClass:'sector-tech', name:'Zomato', price:'₹198.45', change:'+4.80', changePct:'+2.48%', up:true, low:'₹193', high:'₹201', rangePct:62 },
+  paytm: { ticker:'PAYTM.NS', sector:'FINTECH', sectorClass:'sector-fintech', name:'Paytm (One97 Comm.)', price:'₹624.3', change:'+18.90', changePct:'+3.12%', up:true, low:'₹600', high:'₹632', rangePct:74 },
+  nykaa: { ticker:'NYKAA.NS', sector:'TECH', sectorClass:'sector-tech', name:'Nykaa (FSN E-Commerce)', price:'₹182.6', change:'-3.20', changePct:'-1.72%', up:false, low:'₹181', high:'₹190', rangePct:18 },
+  delhivery: { ticker:'DELHIVERY.NS', sector:'LOGISTICS', sectorClass:'sector-logistics', name:'Delhivery', price:'₹384.7', change:'-5.60', changePct:'-1.44%', up:false, low:'₹382', high:'₹392', rangePct:27 },
+  policybazaar: { ticker:'POLICYBZR.NS', sector:'FINTECH', sectorClass:'sector-fintech', name:'PB Fintech (Policybazaar)', price:'₹1,524.80', change:'+42.20', changePct:'+2.86%', up:true, low:'₹1500', high:'₹1540', rangePct:62 },
+  bajajfin: { ticker:'BAJFINANCE.NS', sector:'FINANCE', sectorClass:'sector-finance', name:'Bajaj Finance', price:'₹7,124.50', change:'-88.20', changePct:'-1.22%', up:false, low:'₹7050', high:'₹7200', rangePct:50 },
+  aapl: { ticker:'AAPL', sector:'TECH', sectorClass:'sector-tech', name:'Apple Inc.', price:'$189.3', change:'+2.10', changePct:'+1.12%', up:true, low:'$187.3', high:'$190.4', rangePct:67 },
+  msft: { ticker:'MSFT', sector:'TECH', sectorClass:'sector-tech', name:'Microsoft Corp.', price:'$415.8', change:'-3.20', changePct:'-0.76%', up:false, low:'$413.0', high:'$419.1', rangePct:46 },
+  googl: { ticker:'GOOGL', sector:'TECH', sectorClass:'sector-tech', name:'Alphabet Inc.', price:'$175.4', change:'+1.80', changePct:'+1.04%', up:true, low:'$173.8', high:'$176.2', rangePct:75 },
+  amzn: { ticker:'AMZN', sector:'TECH', sectorClass:'sector-tech', name:'Amazon.com', price:'$192.6', change:'+4.50', changePct:'+2.39%', up:true, low:'$188.0', high:'$193.8', rangePct:80 },
+  nvda: { ticker:'NVDA', sector:'SEMICON', sectorClass:'sector-semicon', name:'NVIDIA Corp.', price:'$875.4', change:'+24.80', changePct:'+2.92%', up:true, low:'$851.2', high:'$881.2', rangePct:84 },
+};
+
+const aiPicksData = [
+  { ticker:'NVDA', company:'NVIDIA Corp.', price:'$875.4', change:'+2.92% today', up:true, action:'BUY', confidence:91, analysis:'AI infrastructure supercycle Year 2. Blackwell chip demand backlogged 12+ months.', target:'$980', upside:'+12.0%' },
+  { ticker:'MSFT', company:'Microsoft Corp.', price:'$415.8', change:'-0.76% today', up:false, action:'BUY', confidence:87, analysis:'Azure + Copilot + OpenAI partnership = most durable AI moat.', target:'$460', upside:'+10.7%' },
+  { ticker:'AAPL', company:'Apple Inc.', price:'$189.3', change:'+1.12% today', up:true, action:'HOLD', confidence:76, analysis:'iPhone 17 supercycle + India manufacturing ramp. Valuation stretched short-term.', target:'$200', upside:'+5.7%' },
+  { ticker:'ZOMATO.NS', company:'Zomato', price:'₹198.45', change:'+2.48% today', up:true, action:'BUY', confidence:83, analysis:'Hyperpure B2B + Blinkit quick commerce — dominant market share in ₹2T TAM.', target:'₹240', upside:'+20.9%' },
+];
+
+const gainersData = [
+  { rank:1, ticker:'ZOMATO.NS', name:'Zomato', price:'₹198.45', chg:'+2.48%', up:true },
+  { rank:2, ticker:'PAYTM.NS', name:'Paytm', price:'₹624.30', chg:'+3.12%', up:true },
+  { rank:3, ticker:'NVDA', name:'NVIDIA', price:'$875.40', chg:'+2.92%', up:true },
+  { rank:4, ticker:'POLICYBZR.NS', name:'Policybazaar', price:'₹1524.80', chg:'+2.86%', up:true },
+  { rank:5, ticker:'AMZN', name:'Amazon', price:'$192.60', chg:'+2.39%', up:true },
+];
+const losersData = [
+  { rank:1, ticker:'BAJFINANCE.NS', name:'Bajaj Finance', price:'₹7124.50', chg:'-1.22%', up:false },
+  { rank:2, ticker:'NYKAA.NS', name:'Nykaa', price:'₹182.60', chg:'-1.72%', up:false },
+  { rank:3, ticker:'DELHIVERY.NS', name:'Delhivery', price:'₹384.70', chg:'-1.44%', up:false },
+  { rank:4, ticker:'MSFT', name:'Microsoft', price:'$415.80', chg:'-0.76%', up:false },
+  { rank:5, ticker:'TITAN.NS', name:'Titan', price:'₹3312.60', chg:'-0.67%', up:false },
+];
+
+// ============ STATE ============
+let selectedInvestId = 'nifty50';
+let currentTimeframe = 8;
+let currentSIP = 30000;
+let growthChart = null;
+let myWatchlist = [];
+
+// ============ NAVIGATION ============
+function showPage(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+}
+
+// ============ SLIDER ============
+function updateSlider(val) {
+  currentSIP = parseInt(val);
+  const formatted = '₹' + currentSIP.toLocaleString('en-IN');
+  document.getElementById('slider-display').textContent = formatted;
+  document.getElementById('chart-sip-amount').textContent = formatted;
+  document.getElementById('table-sip').textContent = currentSIP.toLocaleString('en-IN');
+  renderInvestCards();
+  updateChart();
+  renderComparisonTable();
+}
+
+// ============ INVEST CARDS ============
+function renderInvestCards() {
+  const grid = document.getElementById('invest-cards');
+  if (!grid) return;
+  grid.innerHTML = investmentOptions.map(opt => {
+    const months = 60;
+    const r = opt.rateNum / 12;
+    const n = months;
+    const fv = currentSIP * ((Math.pow(1+r,n)-1)/r) * (1+r);
+    const invested = currentSIP * n;
+    const gain = fv - invested;
+    return `<div class="invest-card ${opt.id === selectedInvestId ? 'selected' : ''}" onclick="selectInvestment('${opt.id}', this)">
+      <div class="invest-card-top">
+        <div class="invest-card-icon">${opt.icon}</div>
+        <span class="risk-badge ${opt.riskClass}">${opt.risk}</span>
+      </div>
+      <div class="invest-rate">${opt.rate}</div>
+      <div class="invest-card-name">${opt.name}</div>
+      <div class="invest-card-type">${opt.type}</div>
+      <div class="invest-card-desc">${opt.desc}</div>
+      <div class="invest-tags">${opt.tags.map(t => `<span class="invest-tag">${t}</span>`).join('')}</div>
+      <div class="invest-card-bottom">
+        <div><div class="invest-growth-label">5-Year Growth (₹${(currentSIP/1000).toFixed(0)}K/mo)</div><div class="invest-growth-val">₹${(fv/1000).toFixed(1)}K</div></div>
+        <div><div class="invest-growth-label" style="text-align:right">GAIN</div><div class="invest-gain-val">+₹${(gain/1000).toFixed(1)}K</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectInvestment(id, el) {
+  selectedInvestId = id;
+  document.querySelectorAll('.invest-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const opt = investmentOptions.find(o => o.id === id);
+  document.getElementById('selected-invest-name').textContent = opt.name;
+  updateChart();
+}
+
+// ============ CHART ============
+function calcSIPValue(monthly, rateAnnual, months) {
+  const r = rateAnnual / 12;
+  if (r === 0) return monthly * months;
+  return monthly * ((Math.pow(1+r, months)-1)/r) * (1+r);
+}
+
+function updateChart() {
+  const opt = investmentOptions.find(o => o.id === selectedInvestId);
+  if (!opt) return;
+
+  const months = currentTimeframe * 12;
+  const labels = [];
+  const invested = [], expected = [], optimistic = [], conservative = [];
+
+  for (let m = 1; m <= months; m++) {
+    if (m % Math.max(1, Math.floor(months/20)) === 0 || m === months) {
+      labels.push(m/12 <= 1 ? m+'m' : (m/12).toFixed(1)+'yr');
+      invested.push(currentSIP * m);
+      expected.push(calcSIPValue(currentSIP, opt.rateNum, m));
+      optimistic.push(calcSIPValue(currentSIP, opt.rateNum * 1.3, m));
+      conservative.push(calcSIPValue(currentSIP, opt.rateNum * 0.7, m));
+    }
+  }
+
+  const totalInvested = currentSIP * months;
+  const expectedFinal = calcSIPValue(currentSIP, opt.rateNum, months);
+  const gain = expectedFinal - totalInvested;
+
+  document.getElementById('cs-invest').textContent = '₹' + (totalInvested/1000).toFixed(0) + 'K';
+  document.getElementById('cs-expected').textContent = '₹' + (expectedFinal/1000).toFixed(0) + 'K';
+  document.getElementById('cs-gain').textContent = '+₹' + (gain/1000).toFixed(0) + 'K';
+  document.getElementById('cs-mult').textContent = (expectedFinal/totalInvested).toFixed(1) + '×';
+
+  const ctx = document.getElementById('growthChart');
+  if (!ctx) return;
+  if (growthChart) growthChart.destroy();
+  growthChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'Expected', data:expected, borderColor:'#00e5a0', backgroundColor:'rgba(0,229,160,0.08)', tension:0.4, fill:true, pointRadius:0, borderWidth:2.5 },
+        { label:'Optimistic', data:optimistic, borderColor:'#4da6ff', backgroundColor:'transparent', tension:0.4, borderDash:[5,3], pointRadius:0, borderWidth:1.5 },
+        { label:'Conservative', data:conservative, borderColor:'#e8b84b', backgroundColor:'transparent', tension:0.4, borderDash:[5,3], pointRadius:0, borderWidth:1.5 },
+        { label:'Invested', data:invested, borderColor:'#606060', backgroundColor:'transparent', tension:0, borderDash:[3,3], pointRadius:0, borderWidth:1.5 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:true,
+      plugins: { legend:{display:false}, tooltip:{
+        callbacks:{ label: ctx => ' ₹' + Math.round(ctx.raw/1000) + 'K' }
+      }},
+      scales: {
+        x: { grid:{color:'#1e1e1e'}, ticks:{color:'#606060',font:{family:'JetBrains Mono',size:10}} },
+        y: { grid:{color:'#1e1e1e'}, ticks:{color:'#606060',font:{family:'JetBrains Mono',size:10}, callback: v => '₹'+(v/1000).toFixed(0)+'K'} }
+      }
+    }
+  });
+}
+
+function setTimeframe(yr, el) {
+  currentTimeframe = yr;
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  updateChart();
+  renderComparisonTable();
+}
+
+// ============ COMPARISON TABLE ============
+function renderComparisonTable() {
+  const tbody = document.getElementById('comparison-table');
+  if (!tbody) return;
+  const months = 60;
+  tbody.innerHTML = investmentOptions.map(opt => {
+    const fv = calcSIPValue(currentSIP, opt.rateNum, months);
+    const invested = currentSIP * months;
+    const gain = fv - invested;
+    return `<tr>
+      <td class="td-name">${opt.icon} ${opt.name}</td>
+      <td style="color:var(--text3)">${opt.type}</td>
+      <td style="color:var(--text2)">${opt.rate}</td>
+      <td>₹${(invested/1000).toFixed(0)}K</td>
+      <td class="td-get">₹${(fv/1000).toFixed(0)}K</td>
+      <td class="td-gain">+₹${(gain/1000).toFixed(0)}K</td>
+      <td><span class="risk-badge ${opt.riskClass}">${opt.risk}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ============ STOCKS ============
+function renderStockCard(s) {
+  const inWatchlist = myWatchlist.includes(s.ticker);
+  return `<div class="stock-card">
+    <div class="stock-card-top">
+      <div>
+        <div class="stock-ticker">${s.ticker}</div>
+        <span class="sector-badge ${s.sectorClass}">${s.sector}</span>
+      </div>
+      <svg class="stock-chart-mini" viewBox="0 0 80 36">
+        ${s.up ? '<polyline points="0,30 20,24 40,18 55,10 80,4" fill="none" stroke="#00e5a0" stroke-width="2"/>' :
+                 '<polyline points="0,6 20,12 40,18 60,26 80,32" fill="none" stroke="#ff4d6d" stroke-width="2"/>'}
+      </svg>
+    </div>
+    <div class="stock-name">${s.name}</div>
+    <div style="display:flex;align-items:baseline;gap:6px;">
+      <div class="stock-price">${s.price}</div>
+      <span class="stock-change ${s.up ? 'val-cyan' : 'val-red'}">${s.change} ${s.changePct}</span>
+    </div>
+    <div class="day-range">
+      <div class="range-label"><span>${s.low}</span><span>${s.high}</span></div>
+      <div class="range-bar"><div class="${s.up ? 'range-dot' : 'range-dot red-dot'}" style="left:${s.rangePct}%"></div></div>
+    </div>
+    <div class="stock-btns">
+      <button class="btn-watchlist ${inWatchlist ? 'val-cyan' : ''}" onclick="addToWatchlist('${s.ticker}', this)">${inWatchlist ? '✓ WATCHLIST' : '+ WATCHLIST'}</button>
+      <button class="btn-details">DETAILS →</button>
+    </div>
+  </div>`;
+}
+
+function switchRisk(profile, el) {
+  document.querySelectorAll('.risk-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const data = riskProfiles[profile];
+  document.getElementById('risk-desc').textContent = data.desc;
+  const grid = document.getElementById('watchlist-stocks');
+  if (grid) grid.innerHTML = data.stocks.map(id => stocksDB[id] ? renderStockCard(stocksDB[id]) : '').join('');
+}
+
+function addToWatchlist(ticker, btn) {
+  if (!myWatchlist.includes(ticker)) {
+    myWatchlist.push(ticker);
+    btn.textContent = '✓ WATCHLIST';
+    btn.classList.add('val-cyan');
+  } else {
+    myWatchlist = myWatchlist.filter(t => t !== ticker);
+    btn.textContent = '+ WATCHLIST';
+    btn.classList.remove('val-cyan');
+  }
+  const countEl = document.getElementById('watchlist-count');
+  if (countEl) countEl.textContent = myWatchlist.length + ' stocks';
+  renderMyWatchlist();
+}
+
+function renderMyWatchlist() {
+  const el = document.getElementById('my-watchlist-content');
+  if (!el) return;
+  if (myWatchlist.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:40px 0;text-align:center;">No stocks in your watchlist yet.</div>';
+    return;
+  }
+  const stocks = myWatchlist.map(t => {
+    const s = Object.values(stocksDB).find(s => s.ticker === t);
+    return s ? renderStockCard(s) : '';
+  }).join('');
+  el.innerHTML = `<div class="cards-grid">${stocks}</div>`;
+}
+
+function renderAIPicks() {
+  const grid = document.getElementById('ai-picks-grid');
+  if (!grid) return;
+  grid.innerHTML = aiPicksData.map(p => `
+    <div class="ai-pick-card">
+      <div class="ai-pick-top">
+        <div class="stock-ticker">${p.ticker}</div>
+        <span class="buy-badge ${p.action==='BUY'?'buy-green':'hold-amber'}">${p.action}</span>
+      </div>
+      <div class="ai-company">${p.company}</div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <div class="ai-price">${p.price}</div>
+        <span class="stock-change ${p.up?'val-cyan':'val-red'}">${p.change}</span>
+      </div>
+      <div class="ai-confidence-label">AI Confidence</div>
+      <div class="confidence-bar"><div class="confidence-fill" style="width:${p.confidence}%"></div></div>
+      <div class="confidence-pct">${p.confidence}%</div>
+      <div class="ai-analysis-box">
+        <div class="ai-analysis-title">◆ AI Analysis</div>
+        ${p.analysis}
+      </div>
+      <div class="ai-targets">
+        <div class="ai-target"><div class="ai-target-label">Target</div><div class="ai-target-val val-cyan">${p.target}</div></div>
+        <div class="ai-target"><div class="ai-target-label">Upside</div><div class="ai-target-val val-amber">${p.upside}</div></div>
+      </div>
+      <button class="btn-watchlist" style="width:100%" onclick="this.textContent='✓ ADDED'; this.classList.add('val-cyan')">+ ADD TO WATCHLIST</button>
+    </div>`).join('');
+}
+
+function showMovers(type) {
+  const data = type === 'gain' ? gainersData : losersData;
+  document.getElementById('gain-btn').className = 'mover-btn' + (type==='gain'?' active-gain':'');
+  document.getElementById('loss-btn').className = 'mover-btn' + (type==='loss'?' active-loss':'');
+  document.getElementById('movers-list-content').innerHTML = data.map(m =>
+    `<div class="mover-row">
+      <div class="mover-rank">#${m.rank}</div>
+      <div class="mover-info"><div class="mover-ticker">${m.ticker}</div><div class="mover-name">${m.name}</div></div>
+      <div class="mover-right"><div class="mover-price">${m.price}</div><div class="mover-chg ${m.up?'val-cyan':'val-red'}">${m.chg}</div></div>
+    </div>`).join('');
+}
+
+// TABS
+function showTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+}
+
+function setSearch(val) { document.getElementById('stock-search-input').value = val; doSearch(); }
+function doSearch() {
+  const val = document.getElementById('stock-search-input').value.toUpperCase().trim();
+  const result = document.getElementById('search-result');
+  const found = Object.values(stocksDB).find(s => s.ticker === val || s.ticker === val+'.NS' || s.name.toUpperCase().includes(val));
+  if (found) { result.innerHTML = `<div class="cards-grid" style="max-width:480px;">${renderStockCard(found)}</div>`; }
+  else { result.innerHTML = `<div style="color:var(--text3);font-size:12px;">No results for "${val}". Try RELIANCE.NS, TCS.NS, AAPL, NVDA etc.</div>`; }
+}
+
+// ============ EMI ============
+function fmtINR(n) { return '₹' + Math.round(n).toLocaleString('en-IN'); }
+function calcEMI(type) {
+  const p = parseFloat(document.getElementById(type+'-principal').value);
+  const r = parseFloat(document.getElementById(type+'-rate').value) / 100 / 12;
+  const n = parseFloat(document.getElementById(type+'-tenure').value) * 12;
+  const emi = p * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+  const total = emi * n;
+  document.getElementById(type+'-emi').textContent = fmtINR(emi);
+  document.getElementById(type+'-total').textContent = fmtINR(total);
+  document.getElementById(type+'-interest').textContent = fmtINR(total - p);
+  document.getElementById(type+'-result').classList.add('show');
+}
+function calcEMIMain() {
+  const p = parseFloat(document.getElementById('emi-p').value);
+  const r = parseFloat(document.getElementById('emi-r').value) / 100 / 12;
+  const n = parseFloat(document.getElementById('emi-n').value);
+  const emi = p * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1);
+  const total = emi * n;
+  document.getElementById('main-emi').textContent = fmtINR(emi);
+  document.getElementById('main-total').textContent = fmtINR(total);
+  document.getElementById('main-interest').textContent = fmtINR(total - p);
+  document.getElementById('main-pct').textContent = ((total-p)/p*100).toFixed(1) + '%';
+  document.getElementById('main-emi-result').classList.add('show');
+}
+
+function togglePlan(btn, cardId) {
+  const card = document.getElementById(cardId);
+  if (card.classList.contains('added')) {
+    card.classList.remove('added');
+    btn.classList.remove('added-state');
+    btn.textContent = 'ADD TO MY PLAN →';
+  } else {
+    card.classList.add('added');
+    btn.classList.add('added-state');
+    btn.textContent = '✓ ADDED TO PLAN';
+  }
+}
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+  renderInvestCards();
+  updateChart();
+  renderComparisonTable();
+  renderAIPicks();
+  switchRisk('conservative', document.querySelector('.risk-btn.active'));
+  showMovers('gain');
+});
+</script>
+</body>
+</html>

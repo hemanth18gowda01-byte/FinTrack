@@ -1,0 +1,10 @@
+flask
+flask-jwt-extended
+flask-limiter
+flask-caching
+flask-cors
+pymongo
+python-dotenv
+cryptography
+requests
+yfinance

@@ -1,0 +1,11 @@
+# Convenience file for Render/CI users who run at workspace root.
+# The real dependencies live under `backend/requirements.txt`.
+# If you're deploying from the root of this repository, Render's build
+# command can simply be:
+#     pip install -r requirements.txt
+# which in turn will install the backend requirements.
+# Alternatively, set Render's "Root Directory" to `backend` and use
+#     pip install -r requirements.txt
+# directly there.
+
+-r backend/requirements.txt

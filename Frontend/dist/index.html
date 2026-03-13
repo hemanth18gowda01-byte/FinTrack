@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FinTrack 2.0 — Financial OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#08090a;color:#f5f0e8;font-family:'DM Sans',system-ui,sans-serif;height:100%;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:#0f1012;}::-webkit-scrollbar-thumb{background:#8a7040;border-radius:2px;}
+.app-input{width:100%;background:rgba(200,169,110,0.04);border:1px solid rgba(200,169,110,0.12);color:#f5f0e8;padding:11px 14px;font-family:'IBM Plex Mono','Courier New',monospace;font-size:12px;outline:none;transition:all .2s;border-radius:1px;letter-spacing:.02em;}
+.app-input:focus{border-color:rgba(200,169,110,.4);background:rgba(200,169,110,.07);}
+.app-input::placeholder{color:rgba(200,192,176,0.28);}
+.app-input:disabled{opacity:.4;}
+select.app-input{appearance:none;cursor:pointer;}
+.btn-primary{background:#c8a96e;color:#08090a;border:none;font-family:'IBM Plex Mono','Courier New',monospace;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;padding:11px 22px;border-radius:1px;}
+.btn-primary:hover:not(:disabled){background:#e8d5b0;box-shadow:0 0 28px rgba(200,169,110,.3);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-ghost{background:transparent;border:1px solid rgba(200,169,110,0.12);color:#c8c0b0;font-family:'IBM Plex Mono','Courier New',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;padding:9px 18px;border-radius:1px;}
+.btn-ghost:hover:not(:disabled){border-color:rgba(200,169,110,.3);background:rgba(200,169,110,.05);color:#c8a96e;}
+.btn-ghost:disabled{opacity:.5;}
+.btn-gold{background:#c8a96e;color:#08090a;border:1px solid #c8a96e;font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;padding:8px 14px;border-radius:1px;}
+.btn-gold:hover:not(:disabled){background:#e8d5b0;border-color:#e8d5b0;}
+.btn-gold:disabled{opacity:.5;cursor:not-allowed;}
+.btn-outline{background:transparent;border:1px solid rgba(200,169,110,0.2);color:#c8c0b0;font-family:'IBM Plex Mono','Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;padding:8px 14px;border-radius:1px;}
+.btn-outline:hover:not(:disabled){border-color:rgba(200,169,110,.4);color:#c8a96e;background:rgba(200,169,110,.05);}
+.btn-outline:disabled{opacity:.5;}
+.card{background:#151618;border:1px solid rgba(200,169,110,0.12);border-radius:2px;transition:border-color .2s;}
+.card:hover{border-color:rgba(200,169,110,.22);}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 14px;color:rgba(200,192,176,0.5);font-family:'IBM Plex Mono','Courier New',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:1px;transition:all .2s;border:1px solid transparent;background:none;width:100%;}
+.nav-link:hover{color:#c8c0b0;background:rgba(200,169,110,.05);}
+.nav-link.active{color:#c8a96e;background:rgba(200,169,110,.08);border-color:rgba(200,169,110,.18);}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:1px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-family:'IBM Plex Mono','Courier New',monospace;}
+.tag-green{background:rgba(76,175,120,.12);color:#4caf78;border:1px solid rgba(76,175,120,.2);}
+.tag-red{background:rgba(224,82,82,.12);color:#e05252;border:1px solid rgba(224,82,82,.2);}
+.tag-gold{background:rgba(200,169,110,.12);color:#c8a96e;border:1px solid rgba(200,169,110,.2);}
+.tag-blue{background:rgba(91,143,212,.12);color:#5b8fd4;border:1px solid rgba(91,143,212,.2);}
+.trow:hover{background:rgba(200,169,110,.03);}
+.shimmer{background:linear-gradient(90deg,#151618 25%,#1c1e21 50%,#151618 75%);background-size:800px 100%;animation:shimmer 1.5s infinite;border-radius:2px;}
+input[type="range"]{-webkit-appearance:none;width:100%;height:4px;background:rgba(200,169,110,0.12);border-radius:2px;outline:none;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#c8a96e;cursor:pointer;box-shadow:0 0 8px rgba(200,169,110,.4);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes slideIn{from{transform:translateX(16px);opacity:0}to{transform:translateX(0);opacity:1}}
+.fade-up{animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both;}
+.fade-in{animation:fadeIn .4s ease both;}
+.slide-in{animation:slideIn .35s cubic-bezier(.16,1,.3,1) both;}
+.spinner{width:14px;height:14px;border:2px solid rgba(200,169,110,.2);border-top-color:#c8a96e;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+const { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } = Recharts;
+
+// ── Theme ──
+const C = {
+  bg:"#08090a",bg1:"#0f1012",bg2:"#151618",bg3:"#1c1e21",
+  border:"rgba(200,169,110,0.12)",borderH:"rgba(200,169,110,0.30)",
+  gold:"#c8a96e",goldL:"#e8d5b0",goldD:"#8a7040",
+  text0:"#f5f0e8",text1:"#c8c0b0",text2:"rgba(200,192,176,0.5)",text3:"rgba(200,192,176,0.28)",
+  green:"#4caf78",red:"#e05252",blue:"#5b8fd4",
+  mono:"'IBM Plex Mono','Courier New',monospace",
+  serif:"'Playfair Display',Georgia,serif",
+  sans:"'DM Sans',system-ui,sans-serif",
+};
+const fmt = n => "₹" + Number(n).toLocaleString("en-IN",{maximumFractionDigits:0});
+const fmtDate = d => new Date(d).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});
+const DEMO_TOKEN = "demo-jwt-token-2025";
+
+// ── Mock Data ──
+const MOCK_TXN = [
+  {id:1,merchant:"Salary Credit",amount:75000,type:"credit",date:"2025-03-01",category:"Income"},
+  {id:2,merchant:"Amazon Purchase",amount:2340,type:"debit",date:"2025-03-02",category:"Shopping"},
+  {id:3,merchant:"Swiggy",amount:480,type:"debit",date:"2025-03-03",category:"Food"},
+  {id:4,merchant:"Ola Cab",amount:220,type:"debit",date:"2025-03-04",category:"Transport"},
+  {id:5,merchant:"Netflix",amount:649,type:"debit",date:"2025-03-05",category:"Entertainment"},
+  {id:6,merchant:"BESCOM Electricity",amount:1200,type:"debit",date:"2025-03-06",category:"Utilities"},
+  {id:7,merchant:"Zomato",amount:350,type:"debit",date:"2025-03-07",category:"Food"},
+  {id:8,merchant:"Airtel Recharge",amount:399,type:"debit",date:"2025-03-08",category:"Utilities"},
+  {id:9,merchant:"Freelance Income",amount:12000,type:"credit",date:"2025-03-10",category:"Income"},
+  {id:10,merchant:"Flipkart Order",amount:3200,type:"debit",date:"2025-03-11",category:"Shopping"},
+  {id:11,merchant:"DMart Groceries",amount:2800,type:"debit",date:"2025-03-12",category:"Food"},
+  {id:12,merchant:"Apollo Pharmacy",amount:640,type:"debit",date:"2025-03-13",category:"Healthcare"},
+];
+const MOCK_LOAN = {
+  monthly_income:75000,monthly_expenses:32000,monthly_savings:43000,
+  affordable_emi:21500,recommended_loan:500000,
+  suggestions:[
+    {name:"Home Renovation Loan",amount:500000,emi:10800,interest_rate:10.5,tenure:60,affordable:true},
+    {name:"Personal Loan",amount:300000,emi:6700,interest_rate:11.0,tenure:48,affordable:true},
+    {name:"Education Loan",amount:800000,emi:17200,interest_rate:9.5,tenure:60,affordable:true},
+  ],
+};
+const MONTHLY_DATA = [
+  {month:"Oct",income:72000,expenses:38000},{month:"Nov",income:75000,expenses:41000},
+  {month:"Dec",income:82000,expenses:52000},{month:"Jan",income:75000,expenses:35000},
+  {month:"Feb",income:75000,expenses:29000},{month:"Mar",income:87000,expenses:32000},
+];
+const DAILY_DATA = [
+  {day:"Mar 1",income:75000,expenses:0,food:0,shopping:0,transport:0,others:0},
+  {day:"Mar 2",income:0,expenses:2340,food:0,shopping:2340,transport:0,others:0},
+  {day:"Mar 3",income:0,expenses:480,food:480,shopping:0,transport:0,others:0},
+  {day:"Mar 4",income:0,expenses:220,food:0,shopping:0,transport:220,others:0},
+  {day:"Mar 5",income:0,expenses:649,food:0,shopping:0,transport:0,others:649},
+  {day:"Mar 6",income:0,expenses:1200,food:0,shopping:0,transport:0,others:1200},
+  {day:"Mar 7",income:0,expenses:350,food:350,shopping:0,transport:0,others:0},
+  {day:"Mar 8",income:0,expenses:399,food:0,shopping:0,transport:0,others:399},
+  {day:"Mar 10",income:12000,expenses:0,food:0,shopping:0,transport:0,others:0},
+  {day:"Mar 11",income:0,expenses:3200,food:0,shopping:3200,transport:0,others:0},
+  {day:"Mar 12",income:0,expenses:2800,food:2800,shopping:0,transport:0,others:0},
+  {day:"Mar 13",income:0,expenses:640,food:0,shopping:0,transport:0,others:640},
+];
+const CAT_DATA = [
+  {name:"Food",value:3630,budget:3000,color:"#c8a96e"},
+  {name:"Shopping",value:5540,budget:4000,color:"#e8d5b0"},
+  {name:"Transport",value:220,budget:500,color:"#a08c5c"},
+  {name:"Utilities",value:1599,budget:1500,color:"#7a6840"},
+  {name:"Entertainment",value:649,budget:600,color:"#d4b483"},
+  {name:"Healthcare",value:640,budget:800,color:"#f0e6d0"},
+];
+const MOCK_STOCKS = {
+  "RELIANCE.NS":{symbol:"RELIANCE.NS",name:"Reliance Industries",price:2847.60,change:+34.20,pct:+1.22,high:2860,low:2810,vol:"3.2M",cap:"₹19.2T",sector:"Energy",currency:"₹"},
+  "TCS.NS":{symbol:"TCS.NS",name:"Tata Consultancy Svcs",price:3921.15,change:-18.50,pct:-0.47,high:3945,low:3898,vol:"1.8M",cap:"₹14.3T",sector:"IT",currency:"₹"},
+  "HDFCBANK.NS":{symbol:"HDFCBANK.NS",name:"HDFC Bank",price:1654.40,change:+12.80,pct:+0.78,high:1668,low:1641,vol:"5.1M",cap:"₹12.5T",sector:"Finance",currency:"₹"},
+  "INFY.NS":{symbol:"INFY.NS",name:"Infosys",price:1482.25,change:+8.95,pct:+0.61,high:1490,low:1471,vol:"4.2M",cap:"₹6.1T",sector:"IT",currency:"₹"},
+  "ITC.NS":{symbol:"ITC.NS",name:"ITC Limited",price:428.70,change:-2.30,pct:-0.53,high:433,low:426,vol:"8.9M",cap:"₹5.3T",sector:"FMCG",currency:"₹"},
+  "WIPRO.NS":{symbol:"WIPRO.NS",name:"Wipro",price:524.85,change:+6.40,pct:+1.23,high:528,low:517,vol:"2.7M",cap:"₹2.7T",sector:"IT",currency:"₹"},
+  "BAJFINANCE.NS":{symbol:"BAJFINANCE.NS",name:"Bajaj Finance",price:7124.50,change:-88.30,pct:-1.22,high:7210,low:7090,vol:"0.9M",cap:"₹4.3T",sector:"Finance",currency:"₹"},
+  "SBIN.NS":{symbol:"SBIN.NS",name:"State Bank of India",price:742.30,change:+9.10,pct:+1.24,high:748,low:733,vol:"12.4M",cap:"₹6.6T",sector:"Finance",currency:"₹"},
+  "MARUTI.NS":{symbol:"MARUTI.NS",name:"Maruti Suzuki",price:12480,change:+145,pct:+1.17,high:12550,low:12330,vol:"0.6M",cap:"₹3.8T",sector:"Auto",currency:"₹"},
+  "TITAN.NS":{symbol:"TITAN.NS",name:"Titan Company",price:3312.60,change:-22.40,pct:-0.67,high:3344,low:3298,vol:"1.1M",cap:"₹2.9T",sector:"Consumer",currency:"₹"},
+  "ZOMATO.NS":{symbol:"ZOMATO.NS",name:"Zomato",price:198.45,change:+4.80,pct:+2.48,high:201,low:193,vol:"18.2M",cap:"₹1.7T",sector:"Tech",currency:"₹"},
+  "NYKAA.NS":{symbol:"NYKAA.NS",name:"Nykaa",price:182.60,change:-3.20,pct:-1.72,high:186,low:181,vol:"6.3M",cap:"₹520B",sector:"Tech",currency:"₹"},
+  "PAYTM.NS":{symbol:"PAYTM.NS",name:"Paytm",price:624.30,change:+18.90,pct:+3.12,high:632,low:608,vol:"9.8M",cap:"₹395B",sector:"Fintech",currency:"₹"},
+  "DELHIVERY.NS":{symbol:"DELHIVERY.NS",name:"Delhivery",price:384.70,change:-5.60,pct:-1.44,high:392,low:382,vol:"3.4M",cap:"₹278B",sector:"Logistics",currency:"₹"},
+  "POLICYBZR.NS":{symbol:"POLICYBZR.NS",name:"PB Fintech",price:1524.80,change:+42.30,pct:+2.86,high:1538,low:1498,vol:"1.2M",cap:"₹692B",sector:"Fintech",currency:"₹"},
+  "AAPL":{symbol:"AAPL",name:"Apple Inc.",price:189.30,change:+2.10,pct:+1.12,high:190.4,low:187.2,vol:"54M",cap:"$2.97T",sector:"Tech",currency:"$"},
+  "MSFT":{symbol:"MSFT",name:"Microsoft Corp.",price:415.80,change:-3.20,pct:-0.76,high:419.1,low:413.5,vol:"21M",cap:"$3.08T",sector:"Tech",currency:"$"},
+  "GOOGL":{symbol:"GOOGL",name:"Alphabet Inc.",price:175.40,change:+1.80,pct:+1.04,high:176.2,low:173.8,vol:"18M",cap:"$2.18T",sector:"Tech",currency:"$"},
+  "AMZN":{symbol:"AMZN",name:"Amazon.com",price:192.60,change:+4.50,pct:+2.39,high:193.8,low:188.9,vol:"35M",cap:"$2.01T",sector:"Tech",currency:"$"},
+  "NVDA":{symbol:"NVDA",name:"NVIDIA Corp.",price:875.40,change:+24.80,pct:+2.92,high:881.2,low:851.3,vol:"42M",cap:"$2.16T",sector:"Semicon",currency:"$"},
+};
+const SPARKS = {
+  "RELIANCE.NS":[2780,2810,2795,2830,2818,2841,2847],"TCS.NS":[3960,3942,3930,3915,3928,3939,3921],
+  "HDFCBANK.NS":[1630,1641,1648,1655,1650,1645,1654],"INFY.NS":[1465,1470,1475,1468,1478,1480,1482],
+  "ITC.NS":[432,430,428,431,429,431,428],"WIPRO.NS":[510,514,518,521,519,522,524],
+  "BAJFINANCE.NS":[7300,7250,7210,7180,7150,7190,7124],"SBIN.NS":[725,730,734,738,740,735,742],
+  "MARUTI.NS":[12100,12200,12280,12350,12400,12430,12480],"TITAN.NS":[3380,3360,3340,3330,3318,3324,3312],
+  "ZOMATO.NS":[183,186,190,192,194,196,198],"NYKAA.NS":[192,189,186,185,183,184,182],
+  "PAYTM.NS":[590,598,605,612,618,614,624],"DELHIVERY.NS":[398,394,390,388,385,387,384],
+  "POLICYBZR.NS":[1460,1475,1490,1500,1510,1518,1524],
+  "AAPL":[182,184,186,187,188,188,189],"MSFT":[420,418,416,417,419,417,415],
+  "GOOGL":[172,173,174,175,174,175,175],"AMZN":[184,186,188,190,191,192,192],"NVDA":[820,835,848,858,865,870,875],
+};
+const PROFILES = {
+  conservative:{label:"Conservative",icon:"◉",color:"#4caf78",desc:"Large-cap Indian blue chips — steady dividends, low volatility",tickers:["RELIANCE.NS","TCS.NS","HDFCBANK.NS","INFY.NS","ITC.NS"]},
+  moderate:{label:"Moderate",icon:"◈",color:"#c8a96e",desc:"Balanced mix of growth & stability — mid + large cap",tickers:["WIPRO.NS","BAJFINANCE.NS","SBIN.NS","MARUTI.NS","TITAN.NS"]},
+  aggressive:{label:"Aggressive",icon:"◭",color:"#e05252",desc:"High-growth small/mid cap — fintech & new-age sectors",tickers:["ZOMATO.NS","NYKAA.NS","PAYTM.NS","DELHIVERY.NS","POLICYBZR.NS"]},
+  global:{label:"Global",icon:"◆",color:"#5b8fd4",desc:"US mega-caps — global diversification from INR portfolio",tickers:["AAPL","MSFT","GOOGL","AMZN","NVDA"]},
+};
+const AI_STOCK_SUGGESTIONS = {
+  conservative:[
+    {symbol:"HDFCBANK.NS",reason:"Strongest retail banking franchise, ~1.2% dividend yield, low NPA ratio.",signal:"BUY",confidence:88,target:"₹1,820",upside:"+10.1%"},
+    {symbol:"ITC.NS",reason:"Diversified FMCG-hotels play with consistent dividend payouts.",signal:"HOLD",confidence:72,target:"₹450",upside:"+5.0%"},
+    {symbol:"RELIANCE.NS",reason:"Energy-to-retail-to-telecom conglomerate. Jio Financial spinoff catalyst.",signal:"BUY",confidence:82,target:"₹3,200",upside:"+12.4%"},
+  ],
+  moderate:[
+    {symbol:"BAJFINANCE.NS",reason:"India's best consumer NBFC. Dip below ₹7,200 is historically a bounce.",signal:"BUY",confidence:84,target:"₹8,400",upside:"+18.0%"},
+    {symbol:"TITAN.NS",reason:"Premium consumer brand with pricing power. Rising middle class tailwind.",signal:"BUY",confidence:79,target:"₹3,650",upside:"+10.2%"},
+    {symbol:"MARUTI.NS",reason:"Hybrid lineup and rural demand make it undervalued at current levels.",signal:"HOLD",confidence:68,target:"₹13,000",upside:"+4.2%"},
+  ],
+  aggressive:[
+    {symbol:"ZOMATO.NS",reason:"Turned EBITDA positive. Quick commerce (Blinkit) is a 10x opportunity.",signal:"BUY",confidence:81,target:"₹240",upside:"+21.0%"},
+    {symbol:"PAYTM.NS",reason:"Post-RBI turbulence repricing is overdone. Core payments business intact.",signal:"BUY",confidence:66,target:"₹750",upside:"+20.2%"},
+    {symbol:"POLICYBZR.NS",reason:"India insurance penetration 4% vs global 7%. Digital-first tailwind.",signal:"BUY",confidence:74,target:"₹1,800",upside:"+18.1%"},
+  ],
+  global:[
+    {symbol:"NVDA",reason:"AI infrastructure supercycle Year 2. Blackwell chip demand backlogged 12+ months.",signal:"BUY",confidence:91,target:"$980",upside:"+12.0%"},
+    {symbol:"MSFT",reason:"Azure + Copilot + OpenAI partnership = most durable AI moat.",signal:"BUY",confidence:87,target:"$460",upside:"+10.7%"},
+    {symbol:"AAPL",reason:"Services business growing 15% YoY with 40% margin. India manufacturing pivot.",signal:"HOLD",confidence:76,target:"$205",upside:"+8.3%"},
+  ],
+};
+const MOCK_NEWS = [
+  {headline:"RBI holds repo rate at 6.5% — market expects cut in H2 2025",source:"Economic Times",time:"2h ago",tag:"Macro",positive:true},
+  {headline:"SEBI tightens F&O regulations; weekly expiry contracts to reduce",source:"Mint",time:"4h ago",tag:"Regulation",positive:false},
+  {headline:"Reliance Q3 results: Net profit up 9% to ₹21,804 Cr, beats estimates",source:"CNBC-TV18",time:"6h ago",tag:"Earnings",positive:true},
+  {headline:"IT sector outlook: Infosys, TCS see recovery in BFSI vertical spending",source:"Business Standard",time:"8h ago",tag:"IT Sector",positive:true},
+  {headline:"FII net buying crosses ₹12,000 Cr in Feb; Nifty heading for new high?",source:"Moneycontrol",time:"10h ago",tag:"FII Flow",positive:true},
+  {headline:"Smallcap index correction: analysts advise caution at current valuations",source:"Livemint",time:"12h ago",tag:"Caution",positive:false},
+];
+const SECTOR_HEAT = [
+  {sector:"IT / Tech",pct:+1.8,stocks:["TCS.NS","INFY.NS","WIPRO.NS"]},
+  {sector:"Banking",pct:+0.9,stocks:["HDFCBANK.NS","SBIN.NS"]},
+  {sector:"Energy",pct:+1.2,stocks:["RELIANCE.NS"]},
+  {sector:"Auto",pct:+1.1,stocks:["MARUTI.NS"]},
+  {sector:"Consumer",pct:-0.6,stocks:["TITAN.NS","ITC.NS"]},
+  {sector:"Finance",pct:-1.2,stocks:["BAJFINANCE.NS"]},
+  {sector:"New-Age Tech",pct:+2.5,stocks:["ZOMATO.NS","PAYTM.NS","POLICYBZR.NS"]},
+  {sector:"Global Tech",pct:+1.6,stocks:["NVDA","MSFT","AAPL","GOOGL","AMZN"]},
+];
+const TOP_MOVERS = {
+  gainers:[
+    {symbol:"ZOMATO.NS",name:"Zomato",pct:+2.48,price:"₹198.45"},
+    {symbol:"PAYTM.NS",name:"Paytm",pct:+3.12,price:"₹624.30"},
+    {symbol:"NVDA",name:"NVIDIA",pct:+2.92,price:"$875.40"},
+    {symbol:"POLICYBZR.NS",name:"Policybazaar",pct:+2.86,price:"₹1524.80"},
+    {symbol:"AMZN",name:"Amazon",pct:+2.39,price:"$192.60"},
+  ],
+  losers:[
+    {symbol:"BAJFINANCE.NS",name:"Bajaj Finance",pct:-1.22,price:"₹7124.50"},
+    {symbol:"NYKAA.NS",name:"Nykaa",pct:-1.72,price:"₹182.60"},
+    {symbol:"DELHIVERY.NS",name:"Delhivery",pct:-1.44,price:"₹384.70"},
+    {symbol:"MSFT",name:"Microsoft",pct:-0.76,price:"$415.80"},
+    {symbol:"TITAN.NS",name:"Titan",pct:-0.67,price:"₹3312.60"},
+  ],
+};
+const NAV_ITEMS = [
+  {id:"dashboard",label:"Dashboard",icon:"◈"},
+  {id:"transactions",label:"Transactions",icon:"⟳"},
+  {id:"ai",label:"AI Insights",icon:"◆"},
+  {id:"loan",label:"Loan Planner",icon:"◉"},
+  {id:"emi",label:"EMI Calc",icon:"∑"},
+  {id:"stocks",label:"Stocks & Invest",icon:"◲",badge:"NEW"},
+  {id:"insurance",label:"Insurance",icon:"♡",badge:"NEW"},
+  {id:"invest",label:"Smart Invest",icon:"◬",badge:"NEW"},
+  {id:"settings",label:"Settings",icon:"⌘"},
+];
+const AI_DEMOS = {
+  spending:"Based on your transactions, Shopping leads at ₹5,540, followed by Food at ₹3,630. These two categories account for 56% of monthly expenses. Setting a ₹4,000 shopping cap and ₹3,000 food cap saves ₹2,170/month.",
+  saving:"Your savings rate of 57.3% is exceptional — 2.8× the recommended 20%. With ₹43,000 saved monthly, you'll build a 6-month emergency fund (₹2,58,000) in just 6 months.",
+  cut:"Three quick wins:\n1. Share Netflix (₹649) with family — saves ₹400/month.\n2. Reduce food delivery (₹830 total) by cooking twice a week — saves ₹300.\n3. Off-peak BESCOM usage reduces electricity by 15%.",
+  loan:"Profile: income ₹75,000, expenses ₹32,000, savings ₹43,000 — you can afford EMI up to ₹21,500/month. This qualifies you for loans up to ₹5,00,000 at 10.5% over 5 years with EMI ₹10,800.",
+  plan:"3-Step Savings Plan:\n1. Emergency Fund: ₹2,50,000 target → ₹20,000/month → ready in 12 months.\n2. Investments: ₹15,000/month into index funds (projected 12% p.a.).\n3. Short-term RD: ₹8,000/month for goals under 2 years.\n\nEstimated 3-year corpus: ₹8,50,000+",
+};
+
+// ── useToast ──
+function useToast() {
+  const [toasts,setToasts] = useState([]);
+  const show = useCallback((msg,type="success")=>{
+    const id=Date.now();
+    setToasts(p=>[...p,{id,msg,type}]);
+    setTimeout(()=>setToasts(p=>p.filter(t=>t.id!==id)),3800);
+  },[]);
+  return {toasts,show};
+}
+
+// ── Shared Components ──
+function Toasts({toasts}){
+  return <div style={{position:"fixed",top:20,right:20,zIndex:9999,display:"flex",flexDirection:"column",gap:8}}>
+    {toasts.map(t=>(
+      <div key={t.id} style={{padding:"12px 18px",borderRadius:2,fontFamily:C.mono,fontSize:11,letterSpacing:".05em",animation:"slideIn .3s ease",maxWidth:300,border:"1px solid",
+        background:t.type==="error"?"#2d0a0a":t.type==="info"?"#0a1428":"#0a1f12",
+        borderColor:t.type==="error"?"rgba(224,82,82,.3)":t.type==="info"?"rgba(91,143,212,.3)":"rgba(76,175,120,.3)",
+        color:t.type==="error"?C.red:t.type==="info"?C.blue:C.green}}>
+        {t.type==="error"?"✗ ":t.type==="info"?"ℹ ":"✓ "}{t.msg}
+      </div>
+    ))}
+  </div>;
+}
+function Sparkline({data,color,w=80,h=30}){
+  if(!data||data.length<2)return null;
+  const mn=Math.min(...data),mx=Math.max(...data),rng=mx-mn||1;
+  const pts=data.map((v,i)=>`${((i/(data.length-1))*w).toFixed(1)},${(h-((v-mn)/rng)*h).toFixed(1)}`).join(" ");
+  const last=pts.split(" ").slice(-1)[0].split(",");
+  return <svg width={w} height={h} style={{overflow:"visible",flexShrink:0}}>
+    <polyline points={pts} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" opacity="0.9"/>
+    <circle cx={last[0]} cy={last[1]} r="2.8" fill={color}/>
+  </svg>;
+}
+function StatCard({label,value,sub,color,icon,delay=0}){
+  return <div className="card fade-up" style={{padding:"20px 22px",animationDelay:`${delay}ms`}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+      <div>
+        <div style={{fontSize:9,color:C.text3,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:10}}>{label}</div>
+        <div style={{fontSize:24,color:color||C.text0,fontFamily:C.serif,fontWeight:400,lineHeight:1}}>{value}</div>
+        {sub&&<div style={{fontSize:10,color:C.text2,fontFamily:C.mono,marginTop:6,letterSpacing:".04em"}}>{sub}</div>}
+      </div>
+      {icon&&<span style={{fontSize:20,opacity:.18,color:C.gold}}>{icon}</span>}
+    </div>
+  </div>;
+}
+function CornerAccents(){
+  return [{top:-1,left:-1,borderTop:`1px solid ${C.gold}`,borderLeft:`1px solid ${C.gold}`},
+    {top:-1,right:-1,borderTop:`1px solid ${C.gold}`,borderRight:`1px solid ${C.gold}`},
+    {bottom:-1,left:-1,borderBottom:`1px solid ${C.gold}`,borderLeft:`1px solid ${C.gold}`},
+    {bottom:-1,right:-1,borderBottom:`1px solid ${C.gold}`,borderRight:`1px solid ${C.gold}`}]
+    .map((s,i)=><div key={i} style={{position:"absolute",width:12,height:12,...s}}/>);
+}
+function CustomTooltip({active,payload,label}){
+  if(!active||!payload?.length)return null;
+  return <div style={{padding:"10px 14px",background:C.bg3,border:"1px solid "+C.border,fontFamily:C.mono,fontSize:10}}>
+    <div style={{color:C.text3,marginBottom:4}}>{label}</div>
+    {payload.map(p=><div key={p.name} style={{color:p.color||C.text1,marginBottom:2}}>{p.name}: {fmt(p.value)}</div>)}
+  </div>;
+}
+function Sidebar({page,setPage,user,onLogout}){
+  return <aside style={{width:210,minHeight:"100vh",background:C.bg1,borderRight:"1px solid "+C.border,display:"flex",flexDirection:"column",padding:"20px 10px",flexShrink:0}}>
+    <div style={{padding:"6px 14px 22px",borderBottom:"1px solid "+C.border,marginBottom:16}}>
+      <div style={{fontFamily:C.serif,fontSize:20,color:C.text0,fontWeight:600,letterSpacing:"-.02em"}}>Fin<em style={{color:C.gold,fontStyle:"italic"}}>Track</em></div>
+      <div style={{fontSize:8,color:C.text3,letterSpacing:".2em",fontFamily:C.mono,marginTop:3}}>FINANCIAL OS 2.0</div>
+    </div>
+    <div style={{height:1,background:`linear-gradient(90deg,${C.gold},transparent)`,opacity:.35,marginBottom:14,marginLeft:14}}/>
+    <div style={{fontSize:8,color:C.text3,letterSpacing:".15em",padding:"0 14px",marginBottom:8,fontFamily:C.mono}}>NAVIGATE</div>
+    <nav style={{display:"flex",flexDirection:"column",gap:2,flex:1}}>
+      {NAV_ITEMS.map((n,i)=>(
+        <button key={n.id} className={`nav-link${page===n.id?" active":""}`} onClick={()=>setPage(n.id)} style={{animationDelay:`${i*50}ms`}}>
+          <span style={{fontSize:13,opacity:.7}}>{n.icon}</span>
+          <span>{n.label}</span>
+          {n.id==="ai"&&<span style={{marginLeft:"auto",background:"rgba(200,169,110,.15)",color:C.gold,fontSize:8,padding:"1px 5px",borderRadius:1,fontFamily:C.mono,letterSpacing:".08em"}}>AI</span>}
+          {n.badge&&n.id!=="ai"&&<span style={{marginLeft:"auto",background:"rgba(91,143,212,.15)",color:C.blue,fontSize:8,padding:"1px 5px",borderRadius:1,fontFamily:C.mono}}>{n.badge}</span>}
+        </button>
+      ))}
+    </nav>
+    <div style={{borderTop:"1px solid "+C.border,paddingTop:14,marginTop:8}}>
+      {user&&<div style={{padding:"6px 14px",marginBottom:8}}>
+        <div style={{fontSize:12,color:C.text1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.name}</div>
+        <div style={{fontSize:9,color:C.text3,fontFamily:C.mono,marginTop:2}}>{user.email}</div>
+      </div>}
+      <button className="nav-link" onClick={onLogout} style={{color:C.red}}><span>⎋</span><span>Sign Out</span></button>
+    </div>
+  </aside>;
+}
+
+// ── Login ──
+function LoginScreen({onLogin,toast}){
+  const [loading,setLoading]=useState(false);
+  const demoLogin=async()=>{
+    setLoading(true);
+    await new Promise(r=>setTimeout(r,900));
+    onLogin({name:"Arjun Sharma",email:"arjun@fintrack.app"},DEMO_TOKEN);
+    toast.show("Signed in with demo account","success");
+  };
+  return <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",overflow:"hidden"}}>
+    <div style={{position:"absolute",inset:0,backgroundImage:`radial-gradient(ellipse 800px 600px at 70% 40%,rgba(200,169,110,.045) 0%,transparent 70%),radial-gradient(ellipse 500px 400px at 20% 80%,rgba(200,169,110,.03) 0%,transparent 60%)`}}/>
+    {[15,35,55,75].map(p=><div key={p} style={{position:"absolute",top:0,bottom:0,left:`${p}%`,width:1,background:"rgba(200,169,110,.03)"}}/>)}
+    {[20,40,60,80].map(p=><div key={p} style={{position:"absolute",left:0,right:0,top:`${p}%`,height:1,background:"rgba(200,169,110,.03)"}}/>)}
+    <div style={{position:"absolute",top:28,left:32,fontFamily:C.serif,fontSize:18,color:C.gold,fontWeight:600}}>Fin<em style={{fontStyle:"italic"}}>Track</em></div>
+    <div style={{position:"absolute",top:33,right:32,fontFamily:C.mono,fontSize:9,color:C.text3,letterSpacing:".15em"}}>FINANCIAL OS 2.0</div>
+    <div style={{position:"absolute",bottom:28,left:32,fontFamily:C.mono,fontSize:8,color:C.text3,letterSpacing:".1em"}}>POWERED BY AI · AES-256 · JWT</div>
+    <div style={{position:"absolute",bottom:28,right:32,fontFamily:C.mono,fontSize:8,color:C.text3,letterSpacing:".1em"}}>RENDER · MONGODB ATLAS</div>
+    <div className="fade-up" style={{width:"100%",maxWidth:400,padding:"44px 40px",background:C.bg2,border:"1px solid "+C.border,borderRadius:2,position:"relative"}}>
+      <CornerAccents/>
+      <div className="tag tag-gold" style={{marginBottom:20}}>
+        <span style={{width:5,height:5,borderRadius:"50%",background:C.gold,animation:"pulse 2s infinite",display:"inline-block"}}/>
+        Secure Login
+      </div>
+      <div style={{fontFamily:C.serif,fontSize:72,fontWeight:600,color:C.text0,lineHeight:1,letterSpacing:"-.02em",marginBottom:18}}>Log<em style={{fontStyle:"italic",color:C.gold}}>in</em></div>
+      <h2 style={{fontFamily:C.serif,fontSize:18,fontWeight:400,color:C.text1,lineHeight:1.4,marginBottom:8}}>
+        As you manage your money,<br/><em style={{fontStyle:"italic",color:C.gold}}>you manage your life.</em>
+      </h2>
+      <p style={{color:C.text3,fontSize:12,fontFamily:C.mono,letterSpacing:".04em",marginBottom:32,lineHeight:1.7}}>
+        AI-powered personal finance intelligence.<br/>Track, analyze, and grow your wealth.
+      </p>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:32}}>
+        {["AI Insights","Loan Planner","EMI Calculator","Smart Analytics"].map(f=>(
+          <span key={f} style={{fontSize:9,color:C.text3,background:"rgba(200,169,110,.05)",border:"1px solid rgba(200,169,110,.1)",padding:"3px 8px",fontFamily:C.mono,letterSpacing:".06em",borderRadius:1}}>{f}</span>
+        ))}
+      </div>
+      <button className="btn-ghost" style={{width:"100%",marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:13}} onClick={()=>toast.show("Configure Google OAuth client ID to enable","info")}>
+        <svg width="16" height="16" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+      <div style={{textAlign:"center",color:C.text3,fontSize:10,fontFamily:C.mono,letterSpacing:".08em",margin:"10px 0"}}>— OR —</div>
+      <button className="btn-primary" style={{width:"100%",padding:13}} onClick={demoLogin} disabled={loading}>
+        {loading?<><span className="spinner"/> &nbsp;Loading…</>:"▶  Demo — Explore the App"}
+      </button>
+      <p style={{textAlign:"center",marginTop:16,color:C.text3,fontSize:10,fontFamily:C.mono,letterSpacing:".05em"}}>Demo uses sample Indian financial data</p>
+    </div>
+  </div>;
+}
+
+// ── Dashboard ──
+function SpendingBudgetCard(){
+  const [hovered,setHovered]=useState(null);
+  const totalSpent=CAT_DATA.reduce((a,c)=>a+c.value,0);
+  const totalBudget=CAT_DATA.reduce((a,c)=>a+c.budget,0);
+  const totalExcess=CAT_DATA.reduce((a,c)=>a+Math.max(0,c.value-c.budget),0);
+  const overCount=CAT_DATA.filter(c=>c.value>c.budget).length;
+  const active=hovered!==null?CAT_DATA[hovered]:null;
+  return <div className="card fade-up" style={{padding:"20px 22px",animationDelay:"260ms"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>Spending by Category</div>
+      {totalExcess>0
+        ?<div style={{textAlign:"right"}}><div style={{fontSize:8,color:C.red,fontFamily:C.mono}}>OVER BUDGET</div><div style={{fontSize:14,color:C.red,fontFamily:C.serif,lineHeight:1.1}}>+{fmt(totalExcess)}</div></div>
+        :<span className="tag tag-green" style={{fontSize:8}}>✓ On Track</span>}
+    </div>
+    <div style={{position:"relative",display:"flex",justifyContent:"center",marginBottom:14}}>
+      <PieChart width={210} height={210}>
+        <Pie data={CAT_DATA.map(c=>({name:c.name,value:c.budget,color:c.color}))} cx={100} cy={100} innerRadius={42} outerRadius={60} paddingAngle={2} dataKey="value" isAnimationActive={false}>
+          {CAT_DATA.map((c,i)=><Cell key={i} fill={c.color} opacity={0.28} strokeWidth={0}/>)}
+        </Pie>
+        <Pie data={CAT_DATA} cx={100} cy={100} innerRadius={64} outerRadius={90} paddingAngle={2} dataKey="value"
+          onMouseEnter={(_,i)=>setHovered(i)} onMouseLeave={()=>setHovered(null)}>
+          {CAT_DATA.map((c,i)=>(<Cell key={i} fill={c.value>c.budget?C.red:c.color} opacity={hovered===null||hovered===i?1:0.35} strokeWidth={hovered===i?2:0} stroke={hovered===i?C.goldL:"none"} style={{cursor:"pointer"}}/>))}
+        </Pie>
+      </PieChart>
+      <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",textAlign:"center",pointerEvents:"none"}}>
+        {active?<>
+          <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",marginBottom:3}}>{active.name.toUpperCase()}</div>
+          <div style={{fontSize:17,fontFamily:C.serif,color:active.value>active.budget?C.red:C.gold,lineHeight:1}}>{fmt(active.value)}</div>
+          {active.value>active.budget
+            ?<div style={{fontSize:9,color:C.red,fontFamily:C.mono,marginTop:3}}>+{fmt(active.value-active.budget)} over</div>
+            :<div style={{fontSize:9,color:C.green,fontFamily:C.mono,marginTop:3}}>-{fmt(active.budget-active.value)} left</div>}
+        </>:<>
+          <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".08em",marginBottom:3}}>TOTAL SPENT</div>
+          <div style={{fontSize:17,fontFamily:C.serif,color:totalSpent>totalBudget?C.red:C.gold,lineHeight:1}}>{fmt(totalSpent)}</div>
+          <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,marginTop:3}}>of {fmt(totalBudget)}</div>
+        </>}
+      </div>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:9}}>
+      {CAT_DATA.map((c,i)=>{
+        const pct=Math.min((c.value/c.budget)*100,100);const isOver=c.value>c.budget;
+        return <div key={c.name} onMouseEnter={()=>setHovered(i)} onMouseLeave={()=>setHovered(null)}
+          style={{cursor:"default",padding:"5px 6px",borderRadius:1,background:hovered===i?"rgba(200,169,110,.04)":"transparent",transition:"background .15s"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+            <span style={{display:"flex",alignItems:"center",gap:5,color:hovered===i?C.text0:C.text1,fontSize:11,transition:"color .15s"}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:isOver?C.red:c.color,display:"inline-block",flexShrink:0}}/>{c.name}
+            </span>
+            <div style={{display:"flex",alignItems:"center",gap:5}}>
+              {isOver
+                ?<span style={{fontSize:9,color:C.red,fontFamily:C.mono,background:"rgba(224,82,82,.1)",border:"1px solid rgba(224,82,82,.2)",padding:"1px 6px",borderRadius:1}}>+{fmt(c.value-c.budget)} over</span>
+                :<span style={{fontSize:9,color:C.green,fontFamily:C.mono,background:"rgba(76,175,120,.07)",border:"1px solid rgba(76,175,120,.14)",padding:"1px 6px",borderRadius:1}}>-{fmt(c.budget-c.value)} left</span>}
+              <span style={{fontSize:11,color:isOver?C.red:C.text1,fontFamily:C.mono,minWidth:50,textAlign:"right"}}>{fmt(c.value)}</span>
+            </div>
+          </div>
+          <div style={{position:"relative",height:4,background:C.border,borderRadius:2}}>
+            <div style={{position:"absolute",top:0,left:0,height:"100%",width:`${pct}%`,background:isOver?C.red:pct>=80?C.gold:C.green,borderRadius:2,transition:"width .9s ease"}}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}>
+            <span style={{fontSize:8,color:isOver?C.red:C.text3,fontFamily:C.mono}}>{Math.round((c.value/c.budget)*100)}% used</span>
+            <span style={{fontSize:8,color:C.text3,fontFamily:C.mono}}>cap {fmt(c.budget)}</span>
+          </div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+function TrendChart(){
+  const [view,setView]=useState("monthly");
+  const [activeCat,setActiveCat]=useState("all");
+  const dailyCategories=[
+    {key:"all",label:"All Spend",color:C.gold},{key:"food",label:"Food",color:"#c8a96e"},
+    {key:"shopping",label:"Shopping",color:"#e8d5b0"},{key:"transport",label:"Transport",color:"#a08c5c"},{key:"others",label:"Others",color:"#7a6840"},
+  ];
+  const dailyDisplayData=DAILY_DATA.map(d=>({...d,spend:activeCat==="all"?d.expenses:d[activeCat]}));
+  const totalSpent=DAILY_DATA.reduce((a,d)=>a+d.expenses,0);
+  const spendDays=DAILY_DATA.filter(d=>d.expenses>0).length;
+  const avgDaily=Math.round(totalSpent/spendDays);
+  const peakDay=DAILY_DATA.reduce((a,d)=>d.expenses>a.expenses?d:a,DAILY_DATA[0]);
+  return <div className="card fade-up" style={{padding:"20px 22px",animationDelay:"200ms"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>{view==="monthly"?"6-Month Income vs Expenses":"Daily Spending — March 2025"}</div>
+      <div style={{display:"flex",gap:2,background:"rgba(200,169,110,.06)",border:"1px solid "+C.border,borderRadius:2,padding:2}}>
+        {[{id:"monthly",label:"Monthly"},{id:"daily",label:"Daily"}].map(t=>(
+          <button key={t.id} onClick={()=>setView(t.id)} style={{padding:"4px 12px",borderRadius:1,border:"none",cursor:"pointer",fontFamily:C.mono,fontSize:9,letterSpacing:".08em",textTransform:"uppercase",background:view===t.id?C.gold:"transparent",color:view===t.id?"#08090a":C.text3,transition:"all .18s"}}>{t.label}</button>
+        ))}
+      </div>
+    </div>
+    {view==="monthly"&&<ResponsiveContainer width="100%" height={220}>
+      <AreaChart data={MONTHLY_DATA}>
+        <defs>
+          <linearGradient id="gI" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.green} stopOpacity={0.15}/><stop offset="95%" stopColor={C.green} stopOpacity={0}/></linearGradient>
+          <linearGradient id="gE" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.gold} stopOpacity={0.15}/><stop offset="95%" stopColor={C.gold} stopOpacity={0}/></linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="2 4" stroke={C.border}/>
+        <XAxis dataKey="month" tick={{fontSize:9,fill:C.text3,fontFamily:C.mono}} axisLine={{stroke:C.border}} tickLine={false}/>
+        <YAxis tick={{fontSize:9,fill:C.text3,fontFamily:C.mono}} axisLine={false} tickLine={false} tickFormatter={v=>"₹"+Math.round(v/1000)+"k"}/>
+        <Tooltip content={<CustomTooltip/>}/>
+        <Area type="monotone" dataKey="income" name="Income" stroke={C.green} strokeWidth={1.5} fill="url(#gI)" dot={{r:2.5,fill:C.green}}/>
+        <Area type="monotone" dataKey="expenses" name="Expenses" stroke={C.gold} strokeWidth={1.5} fill="url(#gE)" dot={{r:2.5,fill:C.gold}}/>
+      </AreaChart>
+    </ResponsiveContainer>}
+    {view==="daily"&&<div>
+      <div style={{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}}>
+        {[{label:"Total Spent",value:fmt(totalSpent),color:C.text1},{label:"Avg/Spend Day",value:fmt(avgDaily),color:C.gold},{label:"Peak Day",value:peakDay.day,color:C.red},{label:"Active Days",value:`${spendDays}/12`,color:C.green}].map(s=>(
+          <div key={s.label} style={{padding:"6px 11px",background:"rgba(200,169,110,.05)",border:"1px solid "+C.border,borderRadius:1}}>
+            <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",marginBottom:3}}>{s.label.toUpperCase()}</div>
+            <div style={{fontSize:13,color:s.color,fontFamily:C.serif}}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>
+        {dailyCategories.map(cat=>(
+          <button key={cat.key} onClick={()=>setActiveCat(cat.key)} style={{padding:"3px 10px",borderRadius:1,border:`1px solid ${activeCat===cat.key?cat.color:C.border}`,background:activeCat===cat.key?`${cat.color}18`:"transparent",color:activeCat===cat.key?cat.color:C.text3,fontFamily:C.mono,fontSize:9,letterSpacing:".07em",textTransform:"uppercase",cursor:"pointer",transition:"all .15s"}}>{cat.label}</button>
+        ))}
+      </div>
+      <ResponsiveContainer width="100%" height={160}>
+        <BarChart data={dailyDisplayData} barCategoryGap="28%">
+          <CartesianGrid strokeDasharray="2 4" stroke={C.border} vertical={false}/>
+          <XAxis dataKey="day" tick={{fontSize:8,fill:C.text3,fontFamily:C.mono}} axisLine={{stroke:C.border}} tickLine={false} tickFormatter={d=>d.split(" ")[1]}/>
+          <YAxis tick={{fontSize:8,fill:C.text3,fontFamily:C.mono}} axisLine={false} tickLine={false} tickFormatter={v=>v>=1000?"₹"+Math.round(v/1000)+"k":"₹"+v} width={36}/>
+          <Tooltip content={<CustomTooltip/>}/>
+          <Bar dataKey="spend" name="Spent" radius={[2,2,0,0]} fill={dailyCategories.find(c=>c.key===activeCat)?.color||C.gold} opacity={0.85}/>
+          <Bar dataKey="income" name="Income" radius={[2,2,0,0]} fill={C.green} opacity={0.5}/>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>}
+  </div>;
+}
+function Dashboard({token,toast}){
+  const [txs,setTxs]=useState(MOCK_TXN);
+  const [loan,setLoan]=useState(MOCK_LOAN);
+  const totalIncome=txs.filter(t=>t.type==="credit").reduce((a,t)=>a+t.amount,0);
+  const totalExpenses=txs.filter(t=>t.type==="debit").reduce((a,t)=>a+t.amount,0);
+  const savings=totalIncome-totalExpenses;
+  const savingsRate=totalIncome>0?((savings/totalIncome)*100).toFixed(1):0;
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:24}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>{new Date().toLocaleDateString("en-IN",{weekday:"long",month:"long",day:"numeric",year:"numeric"}).toUpperCase()}</div>
+      <h1 style={{fontFamily:C.serif,fontSize:30,fontWeight:400,color:C.text0,lineHeight:1.1}}>Financial <em style={{fontStyle:"italic",color:C.gold}}>Overview</em></h1>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:12}}>
+      <StatCard label="Total Income" value={fmt(totalIncome)} color={C.green} icon="↑" delay={0}/>
+      <StatCard label="Total Expenses" value={fmt(totalExpenses)} color={C.text0} icon="↓" delay={60}/>
+      <StatCard label="Net Savings" value={fmt(savings)} color={C.gold} icon="◈" sub={`${savingsRate}% savings rate`} delay={120}/>
+      <StatCard label="Recommended Loan" value={fmt(loan.recommended_loan||0)} color={C.blue} icon="◉" delay={180}/>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"1.5fr 1fr",gap:14}}>
+      <TrendChart/><SpendingBudgetCard/>
+    </div>
+    <div className="card fade-up" style={{animationDelay:"320ms"}}>
+      <div style={{padding:"14px 20px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>Recent Transactions</span>
+        <span className="tag tag-gold">{txs.length} total</span>
+      </div>
+      {txs.slice(0,5).map((tx,i)=>(
+        <div key={tx.id} style={{display:"grid",gridTemplateColumns:"1fr auto",padding:"12px 20px",borderBottom:i<4?"1px solid "+C.border:"none",transition:"background .15s"}}
+          onMouseEnter={e=>e.currentTarget.style.background="rgba(200,169,110,.03)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+            <div style={{width:32,height:32,borderRadius:1,background:"rgba(200,169,110,.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:tx.type==="credit"?C.green:C.text2,flexShrink:0}}>{tx.type==="credit"?"↑":"↓"}</div>
+            <div>
+              <div style={{color:C.text1,fontSize:13}}>{tx.merchant}</div>
+              <div style={{color:C.text3,fontSize:10,fontFamily:C.mono,marginTop:2}}>{tx.category} · {fmtDate(tx.date)}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span className={tx.type==="credit"?"tag tag-green":"tag tag-red"}>{tx.type==="credit"?"CREDIT":"DEBIT"}</span>
+            <span style={{color:tx.type==="credit"?C.green:C.text0,fontSize:15,fontFamily:C.serif}}>{tx.type==="credit"?"+":"-"}{fmt(tx.amount)}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="card fade-up" style={{padding:"20px 22px",animationDelay:"380ms"}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:16}}>Loan Profile Snapshot</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12}}>
+        {[{label:"Monthly Income",value:fmt(loan.monthly_income||0)},{label:"Monthly Expenses",value:fmt(loan.monthly_expenses||0)},{label:"Monthly Savings",value:fmt(loan.monthly_savings||0),color:C.green},{label:"Max Affordable EMI",value:fmt(loan.affordable_emi||0),color:C.gold}].map(s=>(
+          <div key={s.label} style={{padding:"12px 14px",background:C.bg3,borderRadius:1,border:"1px solid "+C.border}}>
+            <div style={{fontSize:8,color:C.text3,letterSpacing:".1em",fontFamily:C.mono,marginBottom:8}}>{s.label.toUpperCase()}</div>
+            <div style={{fontSize:17,color:s.color||C.text0,fontFamily:C.serif}}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>;
+}
+
+// ── Transactions ──
+function Transactions({token,toast}){
+  const [txs,setTxs]=useState(MOCK_TXN);
+  const [search,setSearch]=useState("");
+  const [typeFilter,setTypeFilter]=useState("all");
+  const filtered=useMemo(()=>txs.filter(t=>{const s=search.toLowerCase();return(!search||t.merchant.toLowerCase().includes(s)||(t.category||"").toLowerCase().includes(s))&&(typeFilter==="all"||t.type===typeFilter);}),[txs,search,typeFilter]);
+  const income=txs.filter(t=>t.type==="credit").reduce((a,t)=>a+t.amount,0);
+  const expenses=txs.filter(t=>t.type==="debit").reduce((a,t)=>a+t.amount,0);
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:20}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>ACTIVITY LOG</div>
+      <h1 style={{fontFamily:C.serif,fontSize:28,fontWeight:400,color:C.text0}}>All <em style={{fontStyle:"italic",color:C.gold}}>Transactions</em></h1>
+      <p style={{color:C.text3,fontFamily:C.mono,fontSize:10,marginTop:6,letterSpacing:".06em"}}>{txs.length} records · Income {fmt(income)} · Expenses {fmt(expenses)}</p>
+    </div>
+    <div className="card fade-up" style={{padding:14,display:"flex",gap:10,flexWrap:"wrap",animationDelay:"80ms"}}>
+      <input className="app-input" style={{flex:"1 1 200px"}} placeholder="🔍  Search merchant or category…" value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="app-input" style={{flex:"1 1 140px",maxWidth:180}} value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}>
+        <option value="all">All Types</option><option value="credit">Income Only</option><option value="debit">Debit Only</option>
+      </select>
+    </div>
+    <div className="card fade-up" style={{animationDelay:"140ms"}}>
+      <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"10px 20px",borderBottom:"1px solid "+C.border,color:C.text3,fontSize:9,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>
+        {["Merchant","Category","Date","Type","Amount"].map(h=><span key={h}>{h}</span>)}
+      </div>
+      {filtered.length===0&&<div style={{padding:40,textAlign:"center",color:C.text3,fontFamily:C.mono,fontSize:12}}>No transactions match your filters.</div>}
+      {filtered.map((tx,i)=>(
+        <div key={tx.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"13px 20px",borderBottom:i<filtered.length-1?"1px solid "+C.border:"none",alignItems:"center",transition:"background .15s"}}
+          onMouseEnter={e=>e.currentTarget.style.background="rgba(200,169,110,.03)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:13,color:tx.type==="credit"?C.green:C.text2}}>{tx.type==="credit"?"↑":"↓"}</span><span style={{color:C.text1,fontSize:13}}>{tx.merchant}</span></div>
+          <span className={`tag ${tx.category==="Income"?"tag-green":"tag-gold"}`} style={{width:"fit-content"}}>{tx.category||"—"}</span>
+          <span style={{color:C.text3,fontSize:11,fontFamily:C.mono}}>{fmtDate(tx.date)}</span>
+          <span className={tx.type==="credit"?"tag tag-green":"tag tag-red"}>{tx.type==="credit"?"CREDIT":"DEBIT"}</span>
+          <span style={{color:tx.type==="credit"?C.green:C.text0,fontSize:15,fontFamily:C.serif}}>{tx.type==="credit"?"+":"-"}{fmt(tx.amount)}</span>
+        </div>
+      ))}
+    </div>
+    <div className="card fade-up" style={{padding:"20px 22px",animationDelay:"200ms"}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:16}}>Monthly Spending Trend</div>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={MONTHLY_DATA} barGap={4}>
+          <CartesianGrid strokeDasharray="2 4" stroke={C.border}/>
+          <XAxis dataKey="month" tick={{fontSize:9,fill:C.text3,fontFamily:C.mono}} axisLine={{stroke:C.border}} tickLine={false}/>
+          <YAxis tick={{fontSize:9,fill:C.text3,fontFamily:C.mono}} axisLine={false} tickLine={false} tickFormatter={v=>"₹"+Math.round(v/1000)+"k"}/>
+          <Tooltip content={<CustomTooltip/>}/><Legend wrapperStyle={{fontSize:9,fontFamily:C.mono,color:C.text2}}/>
+          <Bar dataKey="income" name="Income" fill={C.green} radius={[2,2,0,0]} opacity={.75}/>
+          <Bar dataKey="expenses" name="Expenses" fill={C.gold} radius={[2,2,0,0]} opacity={.75}/>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>;
+}
+
+// ── AI Insights ──
+function AIInsights({token,toast}){
+  const [messages,setMessages]=useState([{role:"ai",text:"Hello! I'm your AI financial advisor. I've analysed your transaction history, spending patterns, and savings rate.\n\nWhat would you like to know today?"}]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const endRef=useRef(null);
+  const QUICK=["Where am I spending most?","Am I saving enough?","How can I cut expenses?","What loan can I afford?","Give me a savings plan."];
+  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[messages]);
+  const send=async(text)=>{
+    const msg=(text||input).trim();if(!msg||loading)return;
+    setInput("");setMessages(p=>[...p,{role:"user",text:msg}]);setLoading(true);
+    try{
+      await new Promise(r=>setTimeout(r,1100));
+      const key=Object.keys(AI_DEMOS).find(k=>msg.toLowerCase().includes(k));
+      const reply=AI_DEMOS[key]||"I've reviewed your financial data. Income ₹75,000/month, expenses ₹32,000, savings ₹43,000. Financial health score: 8.2/10. What specific area would you like to explore?";
+      setMessages(p=>[...p,{role:"ai",text:reply}]);
+    }catch(e){setMessages(p=>[...p,{role:"ai",text:"Unable to reach AI service. Please try again."}]);}
+    setLoading(false);
+  };
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:18,height:"calc(100vh - 40px)"}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>POWERED BY AI</div>
+      <h1 style={{fontFamily:C.serif,fontSize:28,fontWeight:400,color:C.text0}}>AI Financial <em style={{fontStyle:"italic",color:C.gold}}>Advisor</em></h1>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:14,flex:1,minHeight:0}}>
+      <div className="card" style={{display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{padding:"10px 18px",borderBottom:"1px solid "+C.border,display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:7,height:7,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>
+          <span style={{color:C.text2,fontSize:9,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>AI Advisor · Online</span>
+          <span style={{marginLeft:"auto"}} className="tag tag-gold">GPT-4 / Gemini</span>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:18,display:"flex",flexDirection:"column",gap:14}}>
+          {messages.map((m,i)=>(
+            <div key={i} style={{display:"flex",gap:10,flexDirection:m.role==="user"?"row-reverse":"row",animation:"fadeUp .3s ease"}}>
+              <div style={{width:28,height:28,borderRadius:1,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,background:m.role==="user"?C.goldD:"rgba(200,169,110,.1)",border:"1px solid "+C.border,color:m.role==="user"?C.goldL:C.gold}}>{m.role==="user"?"U":"◆"}</div>
+              <div style={{maxWidth:"80%",padding:"12px 16px",borderRadius:1,fontSize:13,lineHeight:1.8,background:m.role==="user"?"rgba(200,169,110,.1)":"rgba(255,255,255,.03)",border:`1px solid ${m.role==="user"?"rgba(200,169,110,.25)":C.border}`,color:C.text1,fontFamily:C.mono,whiteSpace:"pre-wrap",letterSpacing:".02em"}}>{m.text}</div>
+            </div>
+          ))}
+          {loading&&<div style={{display:"flex",gap:10}}>
+            <div style={{width:28,height:28,borderRadius:1,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(200,169,110,.1)",border:"1px solid "+C.border,color:C.gold}}>◆</div>
+            <div style={{padding:"14px 18px",background:"rgba(255,255,255,.03)",border:"1px solid "+C.border,borderRadius:1,display:"flex",gap:6,alignItems:"center"}}>
+              {[0,1,2].map(i=><div key={i} style={{width:4,height:4,borderRadius:"50%",background:C.gold,animation:"pulse 1.2s infinite",animationDelay:`${i*.2}s`}}/>)}
+            </div>
+          </div>}
+          <div ref={endRef}/>
+        </div>
+        <div style={{padding:"10px 14px",borderTop:"1px solid "+C.border}}>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+            {QUICK.map(q=><button key={q} className="btn-ghost" style={{padding:"4px 10px",fontSize:9,textTransform:"none",letterSpacing:".02em"}} onClick={()=>send(q)} disabled={loading}>{q}</button>)}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <input className="app-input" placeholder="Ask about your finances…" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} disabled={loading}/>
+            <button className="btn-primary" style={{padding:"11px 18px",flexShrink:0}} onClick={()=>send()} disabled={loading||!input.trim()}>{loading?<span className="spinner"/>:"→"}</button>
+          </div>
+        </div>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:12,overflowY:"auto"}}>
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:14}}>Financial Snapshot</div>
+          {[{label:"Monthly Income",value:fmt(75000),color:C.green},{label:"Monthly Expenses",value:fmt(32000),color:C.text0},{label:"Net Savings",value:fmt(43000),color:C.gold},{label:"Savings Rate",value:"57.3%",color:C.blue}].map(s=>(
+            <div key={s.label} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid "+C.border}}>
+              <span style={{color:C.text3,fontSize:11,fontFamily:C.mono}}>{s.label}</span>
+              <span style={{color:s.color,fontSize:14,fontFamily:C.serif}}>{s.value}</span>
+            </div>
+          ))}
+        </div>
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:14}}>Top Categories</div>
+          {CAT_DATA.slice(0,5).map(c=>{const total=CAT_DATA.reduce((a,x)=>a+x.value,0);return(
+            <div key={c.name} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:10,marginBottom:4}}>
+                <span style={{color:C.text2,display:"flex",alignItems:"center",gap:5}}><span style={{width:5,height:5,borderRadius:"50%",background:c.color,display:"inline-block"}}/>{c.name}</span>
+                <span style={{color:C.text1,fontFamily:C.mono}}>{((c.value/total)*100).toFixed(0)}%</span>
+              </div>
+              <div style={{height:3,background:C.border,borderRadius:1,overflow:"hidden"}}><div style={{height:"100%",width:`${(c.value/total)*100}%`,background:c.color,borderRadius:1}}/></div>
+            </div>
+          );})}
+        </div>
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:12}}>AI Tips</div>
+          {["Your Food spending is 11% above average.","You qualify for a ₹5L home loan.","Savings rate is excellent at 57%.","Consider SIP of ₹15,000/month."].map((tip,i)=>(
+            <div key={i} style={{display:"flex",gap:8,marginBottom:10,alignItems:"flex-start"}}>
+              <span style={{color:C.gold,fontSize:11,flexShrink:0,marginTop:1}}>◆</span>
+              <span style={{color:C.text2,fontSize:11,fontFamily:C.mono,lineHeight:1.6}}>{tip}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── Loan Planner ──
+function LoanPlanner({token,toast}){
+  const loan=MOCK_LOAN;
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:22}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>CREDIT INTELLIGENCE</div>
+      <h1 style={{fontFamily:C.serif,fontSize:28,fontWeight:400,color:C.text0}}>Loan <em style={{fontStyle:"italic",color:C.gold}}>Planner</em></h1>
+      <p style={{color:C.text3,fontFamily:C.mono,fontSize:10,marginTop:6,letterSpacing:".06em"}}>AI-generated loan eligibility based on your real financial profile</p>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12}}>
+      {[{label:"Monthly Income",value:fmt(loan.monthly_income||0),color:C.green},{label:"Monthly Expenses",value:fmt(loan.monthly_expenses||0),color:C.text0},{label:"Monthly Savings",value:fmt(loan.monthly_savings||0),color:C.gold},{label:"Affordable EMI",value:fmt(loan.affordable_emi||0),color:C.blue,sub:"Max recommended"}].map((s,i)=><StatCard key={s.label} label={s.label} value={s.value} color={s.color} sub={s.sub} delay={i*60}/>)}
+    </div>
+    <div className="card fade-up" style={{padding:"20px 22px",animationDelay:"180ms"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <span style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>Loan Affordability Meter</span>
+        <span style={{color:C.gold,fontSize:14,fontFamily:C.serif}}>{fmt(loan.recommended_loan||0)} recommended</span>
+      </div>
+      <div style={{height:8,background:C.border,borderRadius:4,overflow:"hidden"}}><div style={{height:"100%",width:"72%",background:`linear-gradient(90deg,${C.green},${C.gold})`,borderRadius:4}}/></div>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
+        <span style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>₹0</span>
+        <span style={{fontSize:9,color:C.gold,fontFamily:C.mono}}>72% utilized</span>
+        <span style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>₹7,00,000 max</span>
+      </div>
+    </div>
+    <div>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:14}}>Suggested Loan Products</div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {(loan.suggestions||[]).map((l,i)=>(
+          <div key={i} className="card fade-up" style={{padding:"20px 22px",animationDelay:`${(i+3)*80}ms`}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:14,alignItems:"start"}}>
+              <div>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                  <h3 style={{fontFamily:C.serif,fontSize:17,fontWeight:400,color:C.text0}}>{l.name}</h3>
+                  <span className={l.affordable?"tag tag-green":"tag tag-red"}>{l.affordable?"✓ Affordable":"✗ Over limit"}</span>
+                </div>
+                <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
+                  {[{label:"Loan Amount",value:fmt(l.amount)},{label:"Monthly EMI",value:fmt(l.emi),color:C.gold},{label:"Interest Rate",value:`${l.interest_rate}%`},{label:"Tenure",value:`${l.tenure} months`}].map(s=>(
+                    <div key={s.label}><div style={{fontSize:8,color:C.text3,letterSpacing:".1em",fontFamily:C.mono,marginBottom:4}}>{s.label.toUpperCase()}</div><div style={{fontSize:15,color:s.color||C.text1,fontFamily:C.serif}}>{s.value}</div></div>
+                  ))}
+                </div>
+              </div>
+              <button className="btn-primary" style={{padding:"10px 18px",alignSelf:"center"}} onClick={()=>toast.show(`Applied for ${l.name}`,"success")}>Apply →</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>;
+}
+
+// ── EMI Calculator ──
+function EMICalculator({token,toast}){
+  const [form,setForm]=useState({loan_amount:300000,interest_rate:10.5,tenure:36});
+  const localCalc=(f)=>{
+    const p=f.loan_amount,r=(f.interest_rate/100)/12,n=f.tenure;
+    if(!p||!r||!n)return null;
+    const emi=(p*r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1);
+    const total=emi*n;
+    return{emi:Math.round(emi),total_repayment:Math.round(total),total_interest:Math.round(total-p)};
+  };
+  const [result,setResult]=useState(()=>localCalc(form));
+  useEffect(()=>{setResult(localCalc(form));},[form]);
+  const res=result;
+  const scheduleData=res?Array.from({length:Math.min(form.tenure,12)},(_,i)=>{
+    const r=(form.interest_rate/100)/12;const bal=form.loan_amount*Math.pow(1+r,i);
+    return{month:`M${i+1}`,principal:Math.round(res.emi-bal*r),interest:Math.round(bal*r)};
+  }):[];
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:22}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>SMART CALCULATOR</div>
+      <h1 style={{fontFamily:C.serif,fontSize:28,fontWeight:400,color:C.text0}}>EMI <em style={{fontStyle:"italic",color:C.gold}}>Calculator</em></h1>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <div className="card fade-up" style={{padding:"24px 26px",animationDelay:"80ms"}}>
+        <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:20}}>Loan Parameters</div>
+        <div style={{display:"flex",flexDirection:"column",gap:22}}>
+          {[{key:"loan_amount",label:"LOAN AMOUNT",min:50000,max:2000000,step:10000,display:fmt(form.loan_amount)},{key:"interest_rate",label:"INTEREST RATE",min:6,max:24,step:0.1,display:`${form.interest_rate}% p.a.`},{key:"tenure",label:"LOAN TENURE",min:6,max:120,step:6,display:`${form.tenure} months`}].map(({key,label,min,max,step,display})=>(
+            <div key={key}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}><label style={{color:C.text3,fontSize:10,fontFamily:C.mono,letterSpacing:".08em"}}>{label}</label><span style={{color:C.gold,fontSize:15,fontFamily:C.serif}}>{display}</span></div>
+              <input type="range" min={min} max={max} step={step} value={form[key]} onChange={e=>setForm({...form,[key]:+e.target.value})}/>
+              <input className="app-input" type="number" step={step} style={{marginTop:8}} value={form[key]} onChange={e=>setForm({...form,[key]:+e.target.value})}/>
+            </div>
+          ))}
+        </div>
+      </div>
+      {res&&<div style={{display:"flex",flexDirection:"column",gap:12}}>
+        <div className="card fade-up" style={{padding:"28px 26px",textAlign:"center",border:`1px solid rgba(200,169,110,.28)`,animationDelay:"120ms",position:"relative"}}>
+          <CornerAccents/>
+          <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:12}}>Monthly EMI</div>
+          <div style={{fontSize:48,color:C.gold,fontFamily:C.serif,fontWeight:400,lineHeight:1}}>{fmt(res.emi)}</div>
+          <div style={{fontSize:10,color:C.text3,fontFamily:C.mono,marginTop:10,letterSpacing:".06em"}}>per month · {form.tenure} months · {form.interest_rate}% p.a.</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div className="card fade-up" style={{padding:"16px 18px",animationDelay:"160ms"}}><div style={{fontSize:8,color:C.text3,letterSpacing:".1em",fontFamily:C.mono,marginBottom:8}}>TOTAL REPAYMENT</div><div style={{fontSize:19,color:C.text0,fontFamily:C.serif}}>{fmt(res.total_repayment)}</div></div>
+          <div className="card fade-up" style={{padding:"16px 18px",animationDelay:"200ms"}}><div style={{fontSize:8,color:C.text3,letterSpacing:".1em",fontFamily:C.mono,marginBottom:8}}>TOTAL INTEREST</div><div style={{fontSize:19,color:C.red,fontFamily:C.serif}}>{fmt(res.total_interest)}</div></div>
+        </div>
+        <div className="card fade-up" style={{padding:"18px 20px",animationDelay:"240ms"}}>
+          <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:14}}>Principal vs Interest Split</div>
+          <div style={{display:"flex",gap:16,alignItems:"center"}}>
+            <PieChart width={110} height={110}>
+              <Pie data={[{value:form.loan_amount},{value:res.total_interest}]} cx={50} cy={50} innerRadius={28} outerRadius={50} paddingAngle={2} dataKey="value" startAngle={90} endAngle={450}>
+                <Cell fill={C.green} strokeWidth={0}/><Cell fill={C.red} strokeWidth={0}/>
+              </Pie>
+            </PieChart>
+            <div style={{flex:1}}>
+              {[{label:"Principal",value:fmt(form.loan_amount),color:C.green,pct:((form.loan_amount/res.total_repayment)*100).toFixed(0)},{label:"Interest",value:fmt(res.total_interest),color:C.red,pct:((res.total_interest/res.total_repayment)*100).toFixed(0)}].map(s=>(
+                <div key={s.label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <span style={{color:C.text2,fontSize:11,display:"flex",alignItems:"center",gap:6}}><span style={{width:6,height:6,borderRadius:"50%",background:s.color,display:"inline-block"}}/>{s.label}</span>
+                  <div><span style={{color:s.color,fontSize:14,fontFamily:C.serif}}>{s.value}</span><span style={{color:C.text3,fontSize:9,fontFamily:C.mono,marginLeft:6}}>({s.pct}%)</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>}
+    </div>
+    {scheduleData.length>0&&<div className="card fade-up" style={{padding:"20px 22px",animationDelay:"320ms"}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:16}}>Repayment Breakdown (First 12 Months)</div>
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={scheduleData} barCategoryGap="30%">
+          <CartesianGrid strokeDasharray="2 4" stroke={C.border}/>
+          <XAxis dataKey="month" tick={{fontSize:9,fill:C.text3,fontFamily:C.mono}} axisLine={{stroke:C.border}} tickLine={false}/>
+          <YAxis tick={{fontSize:9,fill:C.text3,fontFamily:C.mono}} axisLine={false} tickLine={false} tickFormatter={v=>"₹"+Math.round(v/1000)+"k"}/>
+          <Tooltip content={<CustomTooltip/>}/><Legend wrapperStyle={{fontSize:9,fontFamily:C.mono,color:C.text2}}/>
+          <Bar dataKey="principal" name="Principal" stackId="a" fill={C.green} opacity={.8}/>
+          <Bar dataKey="interest" name="Interest" stackId="a" fill={C.red} opacity={.75} radius={[2,2,0,0]}/>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>}
+  </div>;
+}
+
+// ── Stocks ──
+function SectorHeatmap(){
+  const max=Math.max(...SECTOR_HEAT.map(s=>Math.abs(s.pct)));
+  return <div className="card fade-up" style={{padding:"20px 22px"}}>
+    <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:14}}>Sector Heatmap — Today</div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+      {SECTOR_HEAT.map(s=>{
+        const intensity=Math.abs(s.pct)/max;
+        const bg=s.pct>=0?`rgba(76,175,120,${0.08+intensity*0.28})`:`rgba(224,82,82,${0.08+intensity*0.28})`;
+        const border=s.pct>=0?`rgba(76,175,120,${0.2+intensity*0.4})`:`rgba(224,82,82,${0.2+intensity*0.4})`;
+        const clr=s.pct>=0?C.green:C.red;
+        return <div key={s.sector} style={{padding:"12px 10px",background:bg,border:`1px solid ${border}`,borderRadius:1,textAlign:"center"}}>
+          <div style={{fontSize:9,color:clr,fontFamily:C.mono,fontWeight:600,marginBottom:4}}>{s.pct>=0?"▲":"▼"} {Math.abs(s.pct).toFixed(1)}%</div>
+          <div style={{fontSize:10,color:C.text1,lineHeight:1.3}}>{s.sector}</div>
+          <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,marginTop:4}}>{s.stocks.length} stock{s.stocks.length>1?"s":""}</div>
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+function MarketMovers(){
+  const [side,setSide]=useState("gainers");
+  const data=TOP_MOVERS[side];
+  return <div className="card fade-up" style={{padding:"20px 22px"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono}}>Market Movers</div>
+      <div style={{display:"flex",gap:2,background:"rgba(200,169,110,.06)",border:"1px solid "+C.border,borderRadius:2,padding:2}}>
+        {[["gainers","▲ Gainers"],["losers","▼ Losers"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setSide(id)} style={{padding:"3px 11px",borderRadius:1,border:"none",cursor:"pointer",fontFamily:C.mono,fontSize:8,letterSpacing:".08em",textTransform:"uppercase",background:side===id?(id==="gainers"?C.green:C.red):"transparent",color:side===id?"#fff":C.text3,transition:"all .18s"}}>{label}</button>
+        ))}
+      </div>
+    </div>
+    {data.map((s,i)=>(
+      <div key={s.symbol} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:i<data.length-1?"1px solid "+C.border:"none"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:9,color:C.text3,fontFamily:C.mono,width:16,textAlign:"right"}}>#{i+1}</span>
+          <div><div style={{fontSize:9,color:C.gold,fontFamily:C.mono,letterSpacing:".08em"}}>{s.symbol}</div><div style={{fontSize:12,color:C.text1}}>{s.name}</div></div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{fontSize:15,color:C.text0,fontFamily:C.serif}}>{s.price}</div>
+          <div style={{fontSize:11,color:side==="gainers"?C.green:C.red,fontFamily:C.mono}}>{s.pct>=0?"+":""}{s.pct.toFixed(2)}%</div>
+        </div>
+      </div>
+    ))}
+  </div>;
+}
+function StocksInvest({token,toast}){
+  const SAVINGS=43000;
+  const [profile,setProfile]=useState("conservative");
+  const [tab,setTab]=useState("watchlist");
+  const [stocks,setStocks]=useState({});
+  const [loading,setLoading]=useState(false);
+  const [query,setQuery]=useState("");
+  const [searchRes,setSearchRes]=useState(null);
+  const [searching,setSearching]=useState(false);
+  const [detail,setDetail]=useState(null);
+  const [watchlist,setWatchlist]=useState([]);
+  const prof=PROFILES[profile];
+  useEffect(()=>{
+    setLoading(true);
+    const tickers=PROFILES[profile].tickers;
+    setTimeout(()=>{const d={};tickers.forEach(t=>{if(MOCK_STOCKS[t])d[t]=MOCK_STOCKS[t];});setStocks(d);setLoading(false);},400);
+  },[profile]);
+  const doSearch=async()=>{
+    const sym=query.trim().toUpperCase();if(!sym)return;setSearching(true);setSearchRes(null);
+    await new Promise(r=>setTimeout(r,500));
+    const found=MOCK_STOCKS[sym]||MOCK_STOCKS[sym+".NS"]||null;
+    setSearchRes(found||{error:`No mock data for "${sym}". Ticker not in demo dataset.`});
+    setSearching(false);
+  };
+  const addToWatchlist=(s)=>{
+    if(watchlist.find(x=>x.symbol===s.symbol)){toast.show(`${s.symbol} already in watchlist`,"info");return;}
+    setWatchlist(p=>[...p,s]);toast.show(`${s.symbol} added to watchlist`,"success");
+  };
+  const TabBtn=({id,label,icon,count,badge})=>(
+    <button onClick={()=>setTab(id)} style={{padding:"7px 13px",border:"none",cursor:"pointer",borderRadius:1,fontFamily:C.mono,fontSize:9,letterSpacing:".09em",textTransform:"uppercase",background:tab===id?C.gold:"transparent",color:tab===id?"#08090a":C.text3,transition:"all .18s",display:"flex",alignItems:"center",gap:5}}>
+      {icon} {label}
+      {count>0&&<span style={{background:tab===id?"rgba(0,0,0,.25)":"rgba(200,169,110,.2)",color:tab===id?"#08090a":C.gold,borderRadius:8,fontSize:8,padding:"1px 5px",fontFamily:C.mono}}>{count}</span>}
+      {badge&&<span style={{background:"#5b8fd4",color:"#fff",borderRadius:8,fontSize:7,padding:"1px 5px",fontFamily:C.mono}}>{badge}</span>}
+    </button>
+  );
+  const gainers=Object.values(stocks).filter(s=>s.pct>=0).length;
+  const losers=Object.values(stocks).filter(s=>s.pct<0).length;
+  return <div style={{padding:"28px 30px",display:"flex",flexDirection:"column",gap:20}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:7,display:"flex",alignItems:"center",gap:10}}>
+        STOCKS & INVESTMENTS ·&nbsp;<span style={{color:C.text3}}>● DEMO MODE</span>
+      </div>
+      <h1 style={{fontFamily:C.serif,fontSize:30,fontWeight:400,color:C.text0,lineHeight:1.1}}>Stocks & <em style={{fontStyle:"italic",color:C.gold}}>Investments</em></h1>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:12}}>
+      {[{label:"Monthly Investable",value:"₹"+(SAVINGS/1000).toFixed(0)+"K",color:C.gold},{label:"SIP Suggestion",value:"₹"+(Math.round(SAVINGS*0.35)/1000).toFixed(1)+"K/mo",color:C.green},{label:"Direct Stocks",value:"₹"+(Math.round(SAVINGS*0.15)/1000).toFixed(1)+"K/mo",color:C.blue},{label:"My Watchlist",value:`${watchlist.length} stock${watchlist.length!==1?"s":""}`,color:watchlist.length>0?C.gold:C.text2}].map((s,i)=>(
+        <div key={s.label} className="card fade-up" style={{padding:"17px 20px",animationDelay:`${i*55}ms`}}>
+          <div style={{fontSize:9,color:C.text3,letterSpacing:".13em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:8}}>{s.label}</div>
+          <div style={{fontSize:21,color:s.color,fontFamily:C.serif,fontWeight:400}}>{s.value}</div>
+        </div>
+      ))}
+    </div>
+    <div className="fade-up" style={{display:"flex",gap:2,background:"rgba(200,169,110,.06)",border:"1px solid "+C.border,borderRadius:2,padding:3,width:"fit-content",flexWrap:"wrap"}}>
+      <TabBtn id="watchlist" icon="◈" label="Watchlist"/>
+      <TabBtn id="suggest" icon="◆" label="AI Picks" badge="AI"/>
+      <TabBtn id="search" icon="◭" label="Search"/>
+      <TabBtn id="portfolio" icon="◲" label="My Watchlist" count={watchlist.length}/>
+      <TabBtn id="movers" icon="⇌" label="Movers"/>
+    </div>
+    {tab==="watchlist"&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <div className="card fade-up" style={{padding:"13px 18px",display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        <span style={{fontSize:9,color:C.text3,fontFamily:C.mono,letterSpacing:".1em"}}>RISK PROFILE:</span>
+        {Object.entries(PROFILES).map(([key,p])=>(
+          <button key={key} onClick={()=>setProfile(key)} style={{padding:"5px 14px",borderRadius:1,cursor:"pointer",fontFamily:C.mono,fontSize:10,letterSpacing:".08em",textTransform:"uppercase",border:`1px solid ${profile===key?p.color:C.border}`,background:profile===key?`${p.color}18`:"transparent",color:profile===key?p.color:C.text2}}>{p.icon} {p.label}</button>
+        ))}
+      </div>
+      {!loading&&Object.keys(stocks).length>0&&<div style={{display:"flex",gap:10}}>
+        <div style={{padding:"6px 14px",background:"rgba(76,175,120,.08)",border:"1px solid rgba(76,175,120,.2)",borderRadius:1,fontFamily:C.mono,fontSize:10,color:C.green}}>▲ {gainers} Gaining</div>
+        <div style={{padding:"6px 14px",background:"rgba(224,82,82,.08)",border:"1px solid rgba(224,82,82,.2)",borderRadius:1,fontFamily:C.mono,fontSize:10,color:C.red}}>▼ {losers} Declining</div>
+      </div>}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:12}}>
+        {loading?[1,2,3,4,5].map(i=><div key={i} className="card" style={{padding:"18px 20px"}}>{[140,90,70].map((w,j)=><div key={j} className="shimmer" style={{height:12,width:w,marginBottom:12}}/>)}</div>)
+          :prof.tickers.map((ticker,i)=>{
+            const s=stocks[ticker];if(!s)return null;
+            const up=s.change>=0;const clr=up?C.green:C.red;
+            const spark=SPARKS[ticker];
+            const rangePct=s.high>s.low?Math.max(0,Math.min(((s.price-s.low)/(s.high-s.low))*100,100)):50;
+            return <div key={ticker} className="card fade-up" style={{padding:"18px 20px",animationDelay:`${(i+2)*65}ms`,display:"flex",flexDirection:"column",gap:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}><span style={{fontSize:9,color:prof.color,fontFamily:C.mono,letterSpacing:".1em"}}>{s.symbol}</span><span className="tag tag-gold" style={{fontSize:8}}>{s.sector}</span></div>
+                  <div style={{fontSize:13,color:C.text0,lineHeight:1.25,maxWidth:160}}>{s.name}</div>
+                </div>
+                <Sparkline data={spark} color={clr} w={78} h={30}/>
+              </div>
+              <div style={{display:"flex",alignItems:"baseline",gap:9,marginBottom:10}}>
+                <span style={{fontSize:26,color:C.text0,fontFamily:C.serif,fontWeight:400,lineHeight:1}}>{s.currency}{Number(s.price).toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
+                <span style={{fontSize:11,color:clr,fontFamily:C.mono}}>{up?"+":""}{s.change.toFixed(2)} {up?"+":""}{s.pct.toFixed(2)}%</span>
+              </div>
+              <div style={{marginBottom:10}}>
+                <div style={{position:"relative",height:3,background:C.border,borderRadius:2,marginBottom:4}}>
+                  <div style={{position:"absolute",height:"100%",width:"100%",background:`${clr}18`,borderRadius:2}}/>
+                  <div style={{position:"absolute",top:"50%",left:`${rangePct}%`,transform:"translate(-50%,-50%)",width:8,height:8,borderRadius:"50%",background:clr,boxShadow:`0 0 7px ${clr}90`}}/>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between"}}><span style={{fontSize:8,color:C.text3,fontFamily:C.mono}}>L {s.currency}{s.low}</span><span style={{fontSize:8,color:C.text3,fontFamily:C.mono}}>H {s.currency}{s.high}</span></div>
+              </div>
+              <div style={{display:"flex",gap:7,marginTop:"auto"}}>
+                <button className="btn-gold" style={{flex:1,padding:"7px 8px",fontSize:9}} onClick={()=>addToWatchlist(s)}>+ Watchlist</button>
+                <button className="btn-outline" style={{flex:1,padding:"7px 8px",fontSize:9}} onClick={()=>setDetail(s)}>Details →</button>
+              </div>
+            </div>;
+          })}
+      </div>
+    </div>}
+    {tab==="suggest"&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <div className="card fade-up" style={{padding:"16px 20px",background:"rgba(200,169,110,.04)",border:"1px solid rgba(200,169,110,.18)"}}>
+        <div style={{fontSize:9,color:C.gold,letterSpacing:".12em",fontFamily:C.mono,marginBottom:6}}>◆ AI STOCK RECOMMENDATIONS · {prof.label} Profile</div>
+        <div style={{fontSize:11,color:C.text2,fontFamily:C.mono,lineHeight:1.7}}>Personalised picks based on your ₹{(SAVINGS/1000).toFixed(0)}K monthly surplus and risk tolerance.</div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))",gap:14}}>
+        {(AI_STOCK_SUGGESTIONS[profile]||[]).map((sugg,i)=>{
+          const s=MOCK_STOCKS[sugg.symbol];const sig=sugg.signal;
+          const sigColor=sig==="BUY"?C.green:sig==="SELL"?C.red:C.gold;
+          const up=s?s.pct>=0:true;
+          return <div key={sugg.symbol} className="card fade-up" style={{padding:"20px 22px",animationDelay:`${i*80}ms`}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+              <div>
+                <div style={{fontSize:9,color:C.gold,fontFamily:C.mono,letterSpacing:".1em",marginBottom:4}}>{sugg.symbol}</div>
+                <div style={{fontSize:15,color:C.text0}}>{s?.name||sugg.symbol}</div>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:5}}>
+                <span style={{padding:"3px 10px",background:`${sigColor}18`,border:`1px solid ${sigColor}40`,borderRadius:1,fontSize:9,color:sigColor,fontFamily:C.mono,letterSpacing:".1em",fontWeight:600}}>{sig}</span>
+                <span style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>{sugg.confidence}% confidence</span>
+              </div>
+            </div>
+            {s&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}><span style={{fontFamily:C.serif,fontSize:22,color:C.text0}}>{s.currency}{Number(s.price).toLocaleString("en-IN",{maximumFractionDigits:2})}</span><span style={{fontFamily:C.mono,fontSize:11,color:up?C.green:C.red}}>{up?"+":""}{s.pct?.toFixed(2)}% today</span></div>}
+            <div style={{marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".08em"}}>AI CONFIDENCE</span><span style={{fontSize:8,color:sigColor,fontFamily:C.mono}}>{sugg.confidence}%</span></div>
+              <div style={{height:3,background:C.border,borderRadius:2}}><div style={{height:"100%",width:`${sugg.confidence}%`,background:sigColor,borderRadius:2}}/></div>
+            </div>
+            <div style={{padding:"10px 12px",background:"rgba(200,169,110,.04)",border:"1px solid "+C.border,borderRadius:1,marginBottom:12}}>
+              <div style={{fontSize:8,color:C.gold,fontFamily:C.mono,letterSpacing:".1em",marginBottom:5}}>◆ AI ANALYSIS</div>
+              <div style={{fontSize:10,color:C.text2,fontFamily:C.mono,lineHeight:1.7}}>{sugg.reason}</div>
+            </div>
+            <div style={{display:"flex",gap:8,marginBottom:12}}>
+              <div style={{flex:1,padding:"8px 10px",background:C.bg3,border:"1px solid "+C.border,borderRadius:1,textAlign:"center"}}><div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".08em",marginBottom:3}}>TARGET</div><div style={{fontSize:15,color:C.gold,fontFamily:C.serif}}>{sugg.target}</div></div>
+              <div style={{flex:1,padding:"8px 10px",background:`${C.green}0d`,border:`1px solid ${C.green}28`,borderRadius:1,textAlign:"center"}}><div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".08em",marginBottom:3}}>UPSIDE</div><div style={{fontSize:15,color:C.green,fontFamily:C.serif}}>{sugg.upside}</div></div>
+            </div>
+            <button className="btn-gold" style={{width:"100%",padding:"7px"}} onClick={()=>s&&addToWatchlist(s)}>+ Add to Watchlist</button>
+          </div>;
+        })}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><SectorHeatmap/><MarketMovers/></div>
+    </div>}
+    {tab==="search"&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
+      <div className="card fade-up" style={{padding:"20px 22px"}}>
+        <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:14}}>Search Any Stock</div>
+        <div style={{display:"flex",gap:8,marginBottom:10}}>
+          <input className="app-input" style={{flex:1}} placeholder="RELIANCE.NS · TCS.NS · AAPL · NVDA" value={query} onChange={e=>setQuery(e.target.value.toUpperCase())} onKeyDown={e=>e.key==="Enter"&&doSearch()}/>
+          <button className="btn-gold" style={{padding:"11px 20px"}} onClick={doSearch} disabled={searching||!query.trim()}>{searching?<span className="spinner"/>:"Search →"}</button>
+        </div>
+        <div style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>Indian NSE stocks: add .NS suffix · US stocks: plain ticker (AAPL, MSFT, NVDA)</div>
+      </div>
+      <div className="card fade-up" style={{padding:"14px 18px",animationDelay:"60ms"}}>
+        <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:10}}>Quick Search</div>
+        <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+          {["RELIANCE.NS","TCS.NS","INFY.NS","HDFCBANK.NS","ZOMATO.NS","AAPL","MSFT","NVDA","AMZN","GOOGL"].map(t=>(
+            <button key={t} className="btn-outline" style={{padding:"4px 11px",fontSize:9}} onClick={()=>setQuery(t)}>{t}</button>
+          ))}
+        </div>
+      </div>
+      {searchRes&&<div className="card fade-up" style={{padding:"24px 26px",animationDelay:"80ms"}}>
+        {searchRes.error?<div style={{color:C.red,fontFamily:C.mono,fontSize:12}}>✗ {searchRes.error}</div>:<>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:18}}>
+            <div><div style={{fontSize:9,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",marginBottom:5}}>{searchRes.symbol} · <span style={{color:C.gold}}>{searchRes.sector}</span></div><div style={{fontFamily:C.serif,fontSize:24,color:C.text0,lineHeight:1.1}}>{searchRes.name}</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontSize:34,color:C.text0,fontFamily:C.serif,fontWeight:400,lineHeight:1}}>{searchRes.currency}{Number(searchRes.price).toLocaleString("en-IN",{maximumFractionDigits:2})}</div><div style={{fontSize:13,color:searchRes.change>=0?C.green:C.red,fontFamily:C.mono,marginTop:4}}>{searchRes.change>=0?"+":""}{searchRes.change?.toFixed(2)} ({searchRes.change>=0?"+":""}{searchRes.pct?.toFixed(2)}%)</div></div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn-gold" style={{padding:"10px 20px"}} onClick={()=>addToWatchlist(searchRes)}>+ Add to Watchlist</button>
+            <button className="btn-outline" style={{padding:"10px 20px"}} onClick={()=>{setSearchRes(null);setQuery("");}}>Clear</button>
+          </div>
+        </>}
+      </div>}
+    </div>}
+    {tab==="portfolio"&&<div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {watchlist.length===0
+        ?<div style={{textAlign:"center",padding:52,color:C.text3,fontFamily:C.mono,fontSize:12,lineHeight:2}}>Your watchlist is empty.<br/>Add stocks from the Watchlist or Search tab.</div>
+        :<div className="card fade-up" style={{animationDelay:"60ms"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2.5fr 1fr 1fr 1fr auto",padding:"10px 20px",borderBottom:"1px solid "+C.border,color:C.text3,fontSize:9,letterSpacing:".12em",textTransform:"uppercase",fontFamily:C.mono}}>
+            {["Stock","Price","Change","Cap",""].map(h=><span key={h}>{h}</span>)}
+          </div>
+          {watchlist.map((s,i)=>(
+            <div key={s.symbol} className="trow" style={{display:"grid",gridTemplateColumns:"2.5fr 1fr 1fr 1fr auto",padding:"13px 20px",borderBottom:i<watchlist.length-1?"1px solid "+C.border:"none",alignItems:"center"}}>
+              <div><div style={{fontSize:9,color:C.text3,fontFamily:C.mono,letterSpacing:".08em"}}>{s.symbol}</div><div style={{color:C.text1,fontSize:13,marginTop:2}}>{s.name}</div></div>
+              <span style={{fontFamily:C.serif,fontSize:15,color:C.text0}}>{s.currency}{Number(s.price).toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
+              <span style={{fontFamily:C.mono,fontSize:12,color:s.change>=0?C.green:C.red}}>{s.change>=0?"+":""}{s.pct?.toFixed(2)}%</span>
+              <span style={{fontFamily:C.mono,fontSize:11,color:C.text2}}>{s.cap}</span>
+              <button onClick={()=>setWatchlist(p=>p.filter(x=>x.symbol!==s.symbol))} style={{background:"rgba(224,82,82,.08)",border:"1px solid rgba(224,82,82,.22)",color:C.red,padding:"4px 10px",fontFamily:C.mono,fontSize:9,cursor:"pointer",borderRadius:1}}>✕</button>
+            </div>
+          ))}
+        </div>}
+    </div>}
+    {tab==="movers"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><SectorHeatmap/><MarketMovers/></div>}
+    {detail&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.72)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setDetail(null)}>
+      <div className="card fade-up" style={{width:440,padding:"28px 30px",position:"relative",maxHeight:"85vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+        <button onClick={()=>setDetail(null)} style={{position:"absolute",top:14,right:16,background:"none",border:"none",color:C.text3,fontSize:18,cursor:"pointer"}}>✕</button>
+        <div style={{fontSize:9,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",marginBottom:5}}>{detail.symbol} · {detail.sector}</div>
+        <div style={{fontFamily:C.serif,fontSize:22,color:C.text0,marginBottom:4}}>{detail.name}</div>
+        <div style={{display:"flex",alignItems:"baseline",gap:10,marginBottom:16}}>
+          <span style={{fontSize:36,color:C.text0,fontFamily:C.serif,fontWeight:400}}>{detail.currency}{Number(detail.price).toLocaleString("en-IN",{maximumFractionDigits:2})}</span>
+          <span style={{fontSize:14,color:detail.change>=0?C.green:C.red,fontFamily:C.mono}}>{detail.change>=0?"+":""}{detail.change?.toFixed(2)} ({detail.change>=0?"+":""}{detail.pct?.toFixed(2)}%)</span>
+        </div>
+        {SPARKS[detail.symbol]&&<div style={{marginBottom:18,padding:"14px",background:C.bg3,border:"1px solid "+C.border,borderRadius:1}}><div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",marginBottom:10}}>7-DAY PRICE TREND</div><Sparkline data={SPARKS[detail.symbol]} color={detail.change>=0?C.green:C.red} w={370} h={55}/></div>}
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn-gold" style={{flex:1,padding:"11px"}} onClick={()=>{addToWatchlist(detail);setDetail(null);}}>+ Add to Watchlist</button>
+          <button className="btn-outline" style={{flex:1,padding:"11px"}} onClick={()=>setDetail(null)}>Close</button>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+
+// ── Insurance ──
+function InsurancePlanner({token,toast}){
+  const totalIncome=MOCK_TXN.filter(t=>t.type==="credit").reduce((s,t)=>s+t.amount,0);
+  const totalExpenses=MOCK_TXN.filter(t=>t.type==="debit").reduce((s,t)=>s+t.amount,0);
+  const savings=totalIncome-totalExpenses;
+  const insuranceBudget=Math.round(savings*0.12);
+  const PLANS=[
+    {type:"Health Insurance",icon:"♡",color:"#e05252",tag:"RECOMMENDED",plans:[
+      {name:"Basic Health Cover",premium:500,cover:"3L",features:["Hospitalisation","Day care","Ambulance cover"],affordable:insuranceBudget>=500},
+      {name:"Family Floater Plan",premium:1200,cover:"10L",features:["Family of 4","Pre-existing (3yr wait)","Cashless at 6000+ hospitals"],affordable:insuranceBudget>=1200},
+      {name:"Critical Illness Cover",premium:1500,cover:"25L",features:["40 illnesses covered","Lump-sum payout","Cancer, Heart, Stroke"],affordable:insuranceBudget>=1500},
+    ]},
+    {type:"Term Life Insurance",icon:"◈",color:"#5b8fd4",tag:"ESSENTIAL",plans:[
+      {name:"Basic Term Plan",premium:600,cover:"50L",features:["Pure protection","30yr term","Tax benefit u/s 80C"],affordable:insuranceBudget>=600},
+      {name:"Return of Premium",premium:1800,cover:"1Cr",features:["Premiums refunded on survival","Accidental death rider","Waiver of premium"],affordable:insuranceBudget>=1800},
+    ]},
+    {type:"Vehicle Insurance",icon:"◉",color:"#c8a96e",tag:"MANDATORY",plans:[
+      {name:"Third-Party Only",premium:300,cover:"As per law",features:["Legal mandate","Liability cover","Zero own-damage"],affordable:insuranceBudget>=300},
+      {name:"Comprehensive Plan",premium:900,cover:"Market value",features:["Own damage","Natural calamity","Theft protection"],affordable:insuranceBudget>=900},
+    ]},
+  ];
+  const coverageScore=Math.min(100,Math.round((insuranceBudget/3500)*100));
+  const scoreColor=coverageScore>=70?C.green:coverageScore>=40?C.gold:C.red;
+  return <div style={{padding:"28px 30px",display:"flex",flexDirection:"column",gap:22}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>INSURANCE PLANNER</div>
+      <h1 style={{fontFamily:C.serif,fontSize:30,fontWeight:400,color:C.text0,lineHeight:1.1}}>Insurance <em style={{fontStyle:"italic",color:C.gold}}>Affordability</em></h1>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+      {[{label:"Monthly Income",value:`₹${(totalIncome/1000).toFixed(1)}K`,color:C.green},{label:"Monthly Expenses",value:`₹${(totalExpenses/1000).toFixed(1)}K`,color:C.red},{label:"Net Savings",value:`₹${(savings/1000).toFixed(1)}K`,color:C.gold},{label:"Insurance Budget",value:`₹${(insuranceBudget/1000).toFixed(1)}K`,color:C.blue}].map((kpi,i)=>(
+        <div key={kpi.label} className="card fade-up" style={{padding:"18px 20px",animationDelay:`${i*60}ms`}}>
+          <div style={{fontSize:8,color:C.text3,letterSpacing:".12em",fontFamily:C.mono,textTransform:"uppercase",marginBottom:10}}>{kpi.label}</div>
+          <div style={{fontSize:26,color:kpi.color,fontFamily:C.serif,fontWeight:400,lineHeight:1,marginBottom:6}}>{kpi.value}</div>
+        </div>
+      ))}
+    </div>
+    <div style={{display:"flex",alignItems:"center",gap:20,padding:"20px 24px",background:C.bg2,border:"1px solid "+C.border,borderRadius:2}}>
+      <svg width="100" height="100" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="56" fill="none" stroke={C.border} strokeWidth="10"/>
+        <circle cx="70" cy="70" r="56" fill="none" stroke={scoreColor} strokeWidth="10" strokeDasharray={`${2*Math.PI*56*coverageScore/100} ${2*Math.PI*56}`} strokeLinecap="round" transform="rotate(-90 70 70)"/>
+      </svg>
+      <div>
+        <div style={{fontSize:36,color:scoreColor,fontFamily:C.serif,fontWeight:400}}>{coverageScore}/100</div>
+        <div style={{fontSize:12,color:scoreColor,fontFamily:C.mono}}>{coverageScore>=70?"Well Protected":coverageScore>=40?"Partially Covered":"Under-Insured"}</div>
+        <div style={{fontSize:10,color:C.text3,fontFamily:C.mono,marginTop:4}}>Insurance budget: ₹{insuranceBudget.toLocaleString("en-IN")}/month</div>
+      </div>
+    </div>
+    {PLANS.map((group,gi)=>(
+      <div key={group.type} className="fade-up" style={{animationDelay:`${200+gi*80}ms`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+          <span style={{fontSize:16,color:group.color}}>{group.icon}</span>
+          <div style={{fontSize:9,color:group.color,letterSpacing:".18em",fontFamily:C.mono,textTransform:"uppercase"}}>{group.type}</div>
+          <span style={{background:`${group.color}18`,color:group.color,fontSize:8,padding:"2px 7px",borderRadius:8,fontFamily:C.mono}}>{group.tag}</span>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
+          {group.plans.map((plan,pi)=>(
+            <div key={plan.name} className="card" style={{padding:"20px 22px",border:plan.affordable?`1px solid ${group.color}40`:`1px solid ${C.border}`,opacity:plan.affordable?1:0.45,position:"relative",overflow:"hidden"}}>
+              {plan.affordable&&<div style={{position:"absolute",top:0,right:0,background:group.color,color:"#08090a",fontSize:7,fontFamily:C.mono,letterSpacing:".1em",padding:"3px 9px"}}>AFFORDABLE</div>}
+              <div style={{marginBottom:12}}>
+                <div style={{fontSize:14,color:C.text0,fontWeight:500,marginBottom:4}}>{plan.name}</div>
+                <div style={{display:"flex",alignItems:"baseline",gap:6}}>
+                  <span style={{fontSize:22,color:group.color,fontFamily:C.serif,fontWeight:400}}>₹{plan.premium}</span>
+                  <span style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>/month</span>
+                  <span style={{fontSize:10,color:C.text2,fontFamily:C.mono,marginLeft:"auto"}}>Cover: {plan.cover}</span>
+                </div>
+              </div>
+              <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,display:"flex",flexDirection:"column",gap:6}}>
+                {plan.features.map(f=>(
+                  <div key={f} style={{display:"flex",alignItems:"center",gap:7}}>
+                    <span style={{color:group.color,fontSize:9}}>✓</span>
+                    <span style={{fontSize:11,color:C.text2,fontFamily:C.mono}}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              {plan.affordable&&<button className="btn-gold" style={{width:"100%",marginTop:14,padding:"9px",fontSize:10}} onClick={()=>toast.show(`${plan.name} — ₹${plan.premium}/mo added to plan`,"success")}>Add to My Plan →</button>}
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>;
+}
+
+// ── Smart Invest ──
+function SmartInvest({token,toast}){
+  const totalIncome=MOCK_TXN.filter(t=>t.type==="credit").reduce((s,t)=>s+t.amount,0);
+  const totalExpenses=MOCK_TXN.filter(t=>t.type==="debit").reduce((s,t)=>s+t.amount,0);
+  const freeSavings=totalIncome-totalExpenses;
+  const emergencyBuffer=Math.round(freeSavings*0.20);
+  const investable=Math.max(0,freeSavings-emergencyBuffer);
+  const [monthlyInvest,setMonthlyInvest]=useState(null);
+  const [tenure,setTenure]=useState(5);
+  const [selectedPlan,setSelectedPlan]=useState("sip_nifty");
+  const TENURES=[1,3,5,10,15,20];
+  const INVESTMENT_OPTIONS=[
+    {id:"sip_nifty",name:"Nifty 50 Index SIP",type:"Mutual Fund",rateMin:10,rateMax:14,riskLabel:"Low-Medium",riskColor:"#4caf78",icon:"📈",tags:["Diversified","Tax Efficient"],desc:"Tracks India's top 50 companies.",minAmount:500},
+    {id:"ppf",name:"PPF",type:"Government Scheme",rateMin:7.1,rateMax:7.1,riskLabel:"Zero Risk",riskColor:"#4caf78",icon:"🏛️",tags:["Tax-Free","80C Deduction"],desc:"Government-backed, completely tax-free.",minAmount:500},
+    {id:"stocks_bluechip",name:"Blue-chip Stocks",type:"Direct Equity",rateMin:12,rateMax:20,riskLabel:"Medium-High",riskColor:"#e8a540",icon:"💹",tags:["Direct ownership","Dividend"],desc:"Reliance, HDFC, TCS etc.",minAmount:2000},
+    {id:"fd",name:"Fixed Deposit",type:"Fixed Income",rateMin:6.5,rateMax:7.5,riskLabel:"Zero Risk",riskColor:"#4caf78",icon:"🏦",tags:["Guaranteed","Flexible"],desc:"Safe, predictable returns.",minAmount:1000},
+    {id:"gold_sgb",name:"Sovereign Gold Bond",type:"Gold",rateMin:8,rateMax:13,riskLabel:"Low",riskColor:"#c8a96e",icon:"🥇",tags:["Gold + 2.5% interest","Tax-free"],desc:"Best way to invest in gold.",minAmount:1000},
+  ];
+  const calcSIP=(monthly,annualRate,years)=>{
+    const r=annualRate/100/12,n=years*12;
+    return Math.round(monthly*(((Math.pow(1+r,n)-1)/r)*(1+r)));
+  };
+  const amt=monthlyInvest!==null?monthlyInvest:Math.round(investable*0.5);
+  const activePlan=INVESTMENT_OPTIONS.find(p=>p.id===selectedPlan)||INVESTMENT_OPTIONS[0];
+  const midRate=(activePlan.rateMin+activePlan.rateMax)/2;
+  const growthData=TENURES.map(yr=>({
+    year:`${yr}yr`,invested:amt*yr*12,
+    value_mid:calcSIP(amt,midRate,yr),
+    value_low:calcSIP(amt,activePlan.rateMin,yr),
+    value_high:calcSIP(amt,activePlan.rateMax,yr),
+  }));
+  const tenureResult=growthData.find(d=>d.year===`${tenure}yr`)||growthData[2];
+  const gain=tenureResult.value_mid-tenureResult.invested;
+  const multiplier=tenureResult.invested>0?(tenureResult.value_mid/tenureResult.invested).toFixed(1):1;
+  return <div style={{padding:"28px 30px",display:"flex",flexDirection:"column",gap:22}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>SMART INVEST</div>
+      <h1 style={{fontFamily:C.serif,fontSize:30,fontWeight:400,color:C.text0,lineHeight:1.1}}>Investment <em style={{fontStyle:"italic",color:C.gold}}>Planner</em></h1>
+    </div>
+    <div className="card fade-up" style={{padding:"22px 26px"}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",fontFamily:C.mono,textTransform:"uppercase",marginBottom:18}}>Your Monthly Money Flow</div>
+      <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
+        {[{label:"Income",value:totalIncome,color:C.green},{label:"Expenses",value:-totalExpenses,color:C.red},{label:"Savings",value:freeSavings,color:C.gold},{label:"Emergency (20%)",value:-emergencyBuffer,color:"#888"},{label:"Investable",value:investable,color:C.blue}].map((item,i)=>(
+          <div key={item.label} style={{display:"flex",alignItems:"center"}}>
+            <div style={{textAlign:"center",padding:"0 18px",minWidth:110}}>
+              <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",textTransform:"uppercase",marginBottom:6}}>{item.label}</div>
+              <div style={{fontSize:20,color:item.color,fontFamily:C.serif,fontWeight:400}}>{item.value<0?"-":""}₹{Math.abs(item.value/1000).toFixed(1)}K</div>
+            </div>
+            {i<4&&<div style={{fontSize:18,color:C.text3,flexShrink:0}}>→</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="card fade-up" style={{padding:"22px 26px",animationDelay:"80ms"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",fontFamily:C.mono,textTransform:"uppercase"}}>Monthly Investment Amount</div>
+        <div style={{fontSize:24,color:C.gold,fontFamily:C.serif}}>₹{amt.toLocaleString("en-IN")}</div>
+      </div>
+      <input type="range" min={500} max={investable} step={500} value={amt} onChange={e=>setMonthlyInvest(Number(e.target.value))}/>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+        <span style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>₹500 min</span>
+        <span style={{fontSize:9,color:C.text3,fontFamily:C.mono}}>₹{(investable/1000).toFixed(0)}K max</span>
+      </div>
+    </div>
+    <div className="fade-up" style={{animationDelay:"120ms"}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",fontFamily:C.mono,textTransform:"uppercase",marginBottom:14}}>Choose Investment Option</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:12}}>
+        {INVESTMENT_OPTIONS.map(opt=>{
+          const isSelected=selectedPlan===opt.id;
+          const fv5yr=calcSIP(amt,(opt.rateMin+opt.rateMax)/2,5);
+          return <div key={opt.id} className="card" onClick={()=>{setSelectedPlan(opt.id);toast.show(`Modelling: ${opt.name}`,"success");}}
+            style={{padding:"18px 20px",cursor:"pointer",border:isSelected?`1px solid ${C.gold}70`:`1px solid ${C.border}`,background:isSelected?"rgba(200,169,110,.07)":C.bg2,transition:"all .2s"}}>
+            <div style={{fontSize:20,marginBottom:8}}>{opt.icon}</div>
+            <div style={{fontSize:13,color:isSelected?C.gold:C.text0,marginBottom:4}}>{opt.name}</div>
+            <div style={{fontSize:9,color:C.text3,fontFamily:C.mono,marginBottom:8}}>{opt.rateMin===opt.rateMax?`${opt.rateMin}%`:`${opt.rateMin}–${opt.rateMax}%`} p.a. · {opt.riskLabel}</div>
+            <div style={{fontSize:12,color:C.green,fontFamily:C.mono}}>5yr: ₹{(fv5yr/1000).toFixed(0)}K</div>
+          </div>;
+        })}
+      </div>
+    </div>
+    <div className="card fade-up" style={{padding:"26px 28px",animationDelay:"160ms"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <div>
+          <div style={{fontSize:9,color:C.gold,letterSpacing:".15em",fontFamily:C.mono,textTransform:"uppercase",marginBottom:6}}>◆ GROWTH PROJECTION · {activePlan.name}</div>
+          <div style={{fontSize:13,color:C.text2,fontFamily:C.mono}}>Monthly SIP of ₹{amt.toLocaleString("en-IN")}</div>
+        </div>
+        <div style={{display:"flex",gap:4}}>
+          {TENURES.map(yr=>(
+            <button key={yr} onClick={()=>setTenure(yr)} style={{padding:"4px 10px",fontSize:9,fontFamily:C.mono,border:`1px solid ${tenure===yr?C.gold:C.border}`,background:tenure===yr?"rgba(200,169,110,.15)":"transparent",color:tenure===yr?C.gold:C.text3,cursor:"pointer",borderRadius:1,transition:"all .15s"}}>{yr}yr</button>
+          ))}
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
+        {[{label:"You Invest",value:`₹${(tenureResult.invested/1000).toFixed(0)}K`,color:C.text1},{label:"Expected Value",value:`₹${(tenureResult.value_mid/1000).toFixed(0)}K`,color:C.green},{label:"Total Gain",value:`+₹${(gain/1000).toFixed(0)}K`,color:C.gold},{label:"Multiplier",value:`${multiplier}×`,color:C.blue}].map(kpi=>(
+          <div key={kpi.label} style={{padding:"12px 14px",background:C.bg3,border:`1px solid ${C.border}`,borderRadius:2}}>
+            <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",textTransform:"uppercase",marginBottom:6}}>{kpi.label}</div>
+            <div style={{fontSize:20,color:kpi.color,fontFamily:C.serif,fontWeight:400}}>{kpi.value}</div>
+          </div>
+        ))}
+      </div>
+      <ResponsiveContainer width="100%" height={240}>
+        <AreaChart data={growthData} margin={{top:10,right:10,left:0,bottom:0}}>
+          <defs>
+            <linearGradient id="gradMid2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.green} stopOpacity={0.35}/><stop offset="95%" stopColor={C.green} stopOpacity={0}/></linearGradient>
+            <linearGradient id="gradInv2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={C.gold} stopOpacity={0.2}/><stop offset="95%" stopColor={C.gold} stopOpacity={0}/></linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke={C.border} vertical={false}/>
+          <XAxis dataKey="year" tick={{fill:C.text3,fontSize:10,fontFamily:"IBM Plex Mono"}} axisLine={false} tickLine={false}/>
+          <YAxis tickFormatter={v=>`₹${(v/1000).toFixed(0)}K`} tick={{fill:C.text3,fontSize:9,fontFamily:"IBM Plex Mono"}} axisLine={false} tickLine={false} width={60}/>
+          <Tooltip contentStyle={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:2,fontFamily:"IBM Plex Mono",fontSize:11}} labelStyle={{color:C.gold}} formatter={(v,name)=>[`₹${(v/1000).toFixed(1)}K`,name]}/>
+          <Area type="monotone" dataKey="value_mid" name="Expected" stroke={C.green} fill="url(#gradMid2)" strokeWidth={2}/>
+          <Area type="monotone" dataKey="value_high" name="Optimistic" stroke={C.blue} fill="none" strokeWidth={1.5} strokeDasharray="4 3"/>
+          <Area type="monotone" dataKey="invested" name="Invested" stroke={C.text3} fill="url(#gradInv2)" strokeWidth={1.5}/>
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </div>;
+}
+
+// ── Settings ──
+function Settings({token,toast}){
+  const [notifs,setNotifs]=useState({email:true,sms:false,push:true});
+  const [currency,setCurrency]=useState("INR");
+  const [theme,setTheme]=useState("dark");
+  return <div style={{padding:28,display:"flex",flexDirection:"column",gap:22}}>
+    <div className="fade-up">
+      <div style={{fontSize:9,color:C.gold,letterSpacing:".2em",fontFamily:C.mono,marginBottom:8}}>PREFERENCES</div>
+      <h1 style={{fontFamily:C.serif,fontSize:28,fontWeight:400,color:C.text0}}>App <em style={{fontStyle:"italic",color:C.gold}}>Settings</em></h1>
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <div className="card fade-up" style={{padding:"24px 26px",animationDelay:"60ms"}}>
+        <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:18}}>Notifications</div>
+        {[{key:"email",label:"Email Alerts",desc:"Weekly spending summary & insights"},{key:"sms",label:"SMS Alerts",desc:"Transaction notifications via SMS"},{key:"push",label:"Push Notifications",desc:"Real-time budget breach alerts"}].map(item=>(
+          <div key={item.key} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid "+C.border}}>
+            <div><div style={{fontSize:13,color:C.text1,marginBottom:2}}>{item.label}</div><div style={{fontSize:10,color:C.text3,fontFamily:C.mono}}>{item.desc}</div></div>
+            <div onClick={()=>setNotifs(p=>({...p,[item.key]:!p[item.key]}))} style={{width:40,height:22,borderRadius:11,background:notifs[item.key]?C.gold:"rgba(200,192,176,.15)",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
+              <div style={{position:"absolute",top:3,left:notifs[item.key]?20:3,width:16,height:16,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 4px rgba(0,0,0,.3)"}}/>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="card fade-up" style={{padding:"24px 26px",animationDelay:"120ms"}}>
+        <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:18}}>Preferences</div>
+        <div style={{marginBottom:20}}>
+          <label style={{fontSize:10,color:C.text3,fontFamily:C.mono,letterSpacing:".08em",display:"block",marginBottom:8}}>DEFAULT CURRENCY</label>
+          <select className="app-input" value={currency} onChange={e=>setCurrency(e.target.value)}>
+            <option value="INR">INR — Indian Rupee (₹)</option>
+            <option value="USD">USD — US Dollar ($)</option>
+            <option value="EUR">EUR — Euro (€)</option>
+          </select>
+        </div>
+        <div>
+          <label style={{fontSize:10,color:C.text3,fontFamily:C.mono,letterSpacing:".08em",display:"block",marginBottom:8}}>THEME</label>
+          <div style={{display:"flex",gap:6}}>
+            {["dark","darker","oled"].map(t=>(
+              <button key={t} onClick={()=>{setTheme(t);toast.show(`Theme: ${t}`,"success");}} style={{flex:1,padding:"9px",border:`1px solid ${theme===t?C.gold:C.border}`,background:theme===t?"rgba(200,169,110,.1)":"transparent",color:theme===t?C.gold:C.text3,fontFamily:C.mono,fontSize:9,letterSpacing:".08em",textTransform:"uppercase",cursor:"pointer",borderRadius:1,transition:"all .18s"}}>{t}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="card fade-up" style={{padding:"24px 26px",animationDelay:"180ms"}}>
+      <div style={{fontSize:9,color:C.text2,letterSpacing:".15em",textTransform:"uppercase",fontFamily:C.mono,marginBottom:18}}>Account</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:12}}>
+        {[{label:"Account Type",value:"Demo Account"},{label:"Data Source",value:"Mock Data"},{label:"API Status",value:"Demo Mode",color:C.gold},{label:"Version",value:"FinTrack 2.0"}].map(s=>(
+          <div key={s.label} style={{padding:"12px 14px",background:C.bg3,border:"1px solid "+C.border,borderRadius:1}}>
+            <div style={{fontSize:8,color:C.text3,fontFamily:C.mono,letterSpacing:".1em",marginBottom:6}}>{s.label.toUpperCase()}</div>
+            <div style={{fontSize:14,color:s.color||C.text1,fontFamily:C.mono}}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{marginTop:18,display:"flex",gap:10}}>
+        <button className="btn-ghost" onClick={()=>toast.show("Data export coming soon","info")}>Export Data</button>
+        <button className="btn-ghost" style={{color:C.red,borderColor:"rgba(224,82,82,.2)"}} onClick={()=>toast.show("Account cleared","success")}>Clear Data</button>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── App Root ──
+function App(){
+  const [user,setUser]=useState(null);
+  const [token,setToken]=useState(null);
+  const [page,setPage]=useState("dashboard");
+  const toast=useToast();
+  const handleLogin=useCallback((u,t)=>{setUser(u);setToken(t);},[]);
+  const handleLogout=useCallback(()=>{setUser(null);setToken(null);setPage("dashboard");toast.show("Signed out","info");},[]);
+  if(!user||!token){
+    return <><Toasts toasts={toast.toasts}/><LoginScreen onLogin={handleLogin} toast={toast}/></>;
+  }
+  const pages={
+    dashboard:<Dashboard token={token} toast={toast}/>,
+    transactions:<Transactions token={token} toast={toast}/>,
+    ai:<AIInsights token={token} toast={toast}/>,
+    loan:<LoanPlanner token={token} toast={toast}/>,
+    emi:<EMICalculator token={token} toast={toast}/>,
+    stocks:<StocksInvest token={token} toast={toast}/>,
+    insurance:<InsurancePlanner token={token} toast={toast}/>,
+    invest:<SmartInvest token={token} toast={toast}/>,
+    settings:<Settings token={token} toast={toast}/>,
+  };
+  return <div style={{display:"flex",minHeight:"100vh",background:C.bg,color:C.text0,fontFamily:C.sans}}>
+    <Toasts toasts={toast.toasts}/>
+    <Sidebar page={page} setPage={setPage} user={user} onLogout={handleLogout}/>
+    <main style={{flex:1,overflowY:"auto"}} className="fade-in">{pages[page]||pages.dashboard}</main>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
